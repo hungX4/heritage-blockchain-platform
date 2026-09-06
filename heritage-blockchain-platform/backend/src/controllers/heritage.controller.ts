@@ -35,7 +35,6 @@ export class HeritageController {
     }
   }
 
-  // POST /api/heritages
   static async createHeritage(request: Request, response: Response) {
     try {
       const heritageData = request.body;
@@ -71,19 +70,19 @@ export class HeritageController {
     }
   }
 
-  static async submitHeritage(request: Request, response: Response) {
-    const heritageId = String(request.params.id);
+  // static async submitHeritage(request: Request, response: Response) {
+  //   const heritageId = String(request.params.id);
 
-    try {
-      const submittedHeritage = await HeritageService.submitHeritage(heritageId);
+  //   try {
+  //     const submittedHeritage = await HeritageService.submitHeritage(heritageId);
 
-      return response.status(200).json(successHandler(200, 'Gửi hồ sơ di sản để kiểm duyệt thành công', submittedHeritage));
-    } catch (error) {
-      console.error('Lỗi khi gửi hồ sơ di sản:', error);
+  //     return response.status(200).json(successHandler(200, 'Gửi hồ sơ di sản để kiểm duyệt thành công', submittedHeritage));
+  //   } catch (error) {
+  //     console.error('Lỗi khi gửi hồ sơ di sản:', error);
 
-      return HeritageController.handleError(error, response, 'Lỗi khi gửi hồ sơ di sản');
-    }
-  }
+  //     return HeritageController.handleError(error, response, 'Lỗi khi gửi hồ sơ di sản');
+  //   }
+  // }
 
   static async updateHeritageStatus(request: Request, response: Response) {
     const heritageId = String(request.params.id);

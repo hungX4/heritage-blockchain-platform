@@ -1,8 +1,9 @@
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Fingerprint, Hash } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { heritageApi } from '../services/heritage.api';
-import type { Heritage, HeritageStatus } from '../types/heritage';
+import { heritageVersionApi } from '../services/heritage-version.api';
+import type { Heritage, HeritageStatus, HeritageVersion } from '../types/heritage';
 
 const statusLabels: Record<HeritageStatus, string> = {
   DRAFT: 'Bản nháp',
@@ -16,6 +17,7 @@ const statusLabels: Record<HeritageStatus, string> = {
 export function HeritageDetailPage() {
   const { id } = useParams();
   const [heritage, setHeritage] = useState<Heritage | null>(null);
+  const [versions, setVersions] = useState<HeritageVersion[]>([]);
   const [message, setMessage] = useState('');
 
   const loadHeritage = useCallback(async () => {
@@ -24,8 +26,13 @@ export function HeritageDetailPage() {
     }
 
     try {
-      const response = await heritageApi.detail(id);
-      setHeritage(response.data.data);
+      const [heritageResponse, versionsResponse] = await Promise.all([
+        heritageApi.detail(id),
+        heritageVersionApi.listByHeritage(id)
+      ]);
+
+      setHeritage(heritageResponse.data.data);
+      setVersions(versionsResponse.data.data);
     } catch {
       setMessage('Không thể tải chi tiết hồ sơ di sản.');
     }
@@ -46,6 +53,20 @@ export function HeritageDetailPage() {
       setMessage('Đã cập nhật trạng thái hồ sơ.');
     } catch {
       setMessage('Không thể cập nhật trạng thái hồ sơ.');
+    }
+  }
+
+  async function createVersionHash() {
+    if (!id) {
+      return;
+    }
+
+    try {
+      const response = await heritageVersionApi.createForHeritage(id);
+      setVersions((current) => [response.data.data, ...current]);
+      setMessage('Đã tạo phiên bản và dataHash cho hồ sơ.');
+    } catch {
+      setMessage('Chỉ hồ sơ VERIFIED hoặc PUBLISHED mới có thể tạo version/hash.');
     }
   }
 
@@ -115,6 +136,58 @@ export function HeritageDetailPage() {
             >
               {label}
             </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded border border-stone-200 bg-white">
+        <div className="flex flex-col gap-3 border-b border-stone-200 p-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-2">
+            <Fingerprint size={18} className="text-emerald-700" />
+            <div>
+              <h2 className="text-base font-semibold text-slate-900">Phiên bản và dataHash</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Hash SHA-256 được tạo từ dữ liệu hồ sơ đã canonicalize.
+              </p>
+            </div>
+          </div>
+          <button
+            className="inline-flex items-center justify-center gap-2 rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-slate-300"
+            disabled={heritage.status !== 'VERIFIED' && heritage.status !== 'PUBLISHED'}
+            onClick={() => void createVersionHash()}
+            type="button"
+          >
+            <Hash size={16} />
+            Tạo version/hash
+          </button>
+        </div>
+
+        <div className="divide-y divide-stone-200">
+          {versions.length === 0 && (
+            <p className="p-5 text-sm text-slate-500">Hồ sơ này chưa có phiên bản/hash nào.</p>
+          )}
+          {versions.map((version) => (
+            <article className="grid gap-3 p-5 lg:grid-cols-[160px_1fr]" key={version.id}>
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Version {version.version}</p>
+                <time className="mt-1 block text-xs text-slate-500">
+                  {new Date(version.createdAt).toLocaleString()}
+                </time>
+              </div>
+              <div>
+                <p className="break-all rounded bg-stone-50 p-3 font-mono text-xs text-slate-700">
+                  {version.dataHash}
+                </p>
+                <details className="mt-3">
+                  <summary className="cursor-pointer text-sm font-medium text-emerald-800">
+                    Xem canonical data
+                  </summary>
+                  <pre className="mt-2 overflow-auto rounded bg-slate-950 p-3 text-xs text-slate-100">
+                    {JSON.stringify(version.canonicalData, null, 2)}
+                  </pre>
+                </details>
+              </div>
+            </article>
           ))}
         </div>
       </div>

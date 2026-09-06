@@ -51,3 +51,14 @@ export type Verification = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type HeritageVersion = {
+  id: string;
+  heritageId: string;
+  version: number;
+  canonicalData: Record<string, string | number>;
+  dataHash: string;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+};

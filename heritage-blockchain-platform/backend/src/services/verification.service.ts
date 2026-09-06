@@ -1,6 +1,7 @@
 import { AppDataSource } from '../config/database.js';
 import { Heritage, HeritageStatus } from '../models/heritage.model.js';
 import { Verification, VerificationStatus } from '../models/verification.model.js';
+import { HeritageVersionService } from './heritage-version.service.js';
 
 export type VerificationInput = {
   reviewerId?: string;
@@ -104,10 +105,11 @@ export class VerificationService {
 
     heritage.status = HeritageStatus.VERIFIED;
 
-    await this.verificationRepository.save(verification);
+    const savedVerification = await this.verificationRepository.save(verification);
     await this.heritageRepository.save(heritage);
+    await HeritageVersionService.createVersionForHeritage(heritageId, input.reviewerId);
 
-    return verification;
+    return savedVerification;
   }
 
   static async rejectHeritage(heritageId: string, input: VerificationInput) {

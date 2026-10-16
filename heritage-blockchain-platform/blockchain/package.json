@@ -11,12 +11,20 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.15",
     "@nomicfoundation/hardhat-toolbox": "^7.0.0",
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.7",
+    "@nomicfoundation/hardhat-verify": "^3.1.0",
+    "@streamparser/json": "^0.0.26",
+    "@streamparser/json-node": "^0.0.26",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^22.10.2",
     "eslint": "^9.17.0",
     "hardhat": "^3.13.0",
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "sequelize": "3.30.0"
-  }
+    "blockchain": "^1.0.6",
+    "is-safe-filename": "^0.1.1"
+  },
+  "type": "module"
 }

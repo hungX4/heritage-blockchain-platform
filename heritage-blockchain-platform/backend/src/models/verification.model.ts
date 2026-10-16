@@ -1,12 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Relation } from 'typeorm';
 import { Heritage } from './heritage.model.js';
-import { User } from './user.model.js';
-
-export enum VerificationStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED'
-}
+import { Expert } from './expert.model.js';
+import { VerificationStatus } from '../types/enums/verification.enum.js';
 
 @Entity({ name: 'verifications' })
 export class Verification {
@@ -17,7 +12,7 @@ export class Verification {
   heritageId: string;
 
   @Column({ type: 'uuid', nullable: true })
-  reviewerId?: string;
+  expertId?: string;
 
   @Column({ type: 'enum', enum: VerificationStatus, default: VerificationStatus.PENDING })
   status: VerificationStatus;
@@ -29,9 +24,9 @@ export class Verification {
   @JoinColumn({ name: 'heritageId' })
   heritage: Relation<Heritage>;
 
-  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'reviewerId' })
-  reviewer?: Relation<User>;
+  @ManyToOne(() => Expert)
+  @JoinColumn({ name: 'expertId' })
+  expert: Relation<Expert>;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

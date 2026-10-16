@@ -1,2 +1,2 @@
-export type UserRole = 'ADMIN' | 'DATA_PROVIDER' | 'REVIEWER' | 'USER';
+export type UserRole = 'SYSTEM_ADMIN' | 'ORG_ADMIN' | 'INDEPENDENT_EXPERT' | 'ORG_EXPERT' | 'USER';
 

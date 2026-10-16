@@ -1,6 +1,7 @@
-﻿import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Relation } from 'typeorm';
+﻿import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Relation, OneToMany } from 'typeorm';
 import { Heritage } from './heritage.model.js';
 import { User } from './user.model.js';
+import { HeritageVersionMedia } from './heritage-version-media.model.js';
 @Entity({ name: 'heritage_versions' })
 export class HeritageVersion {
   @PrimaryGeneratedColumn('uuid')
@@ -18,6 +19,9 @@ export class HeritageVersion {
   @Column({ type: 'varchar', length: 64 })
   dataHash: string;
 
+  @Column({ type: 'varchar', length: 256, nullable: true })
+  blockchainTxHash?: string;
+
   @Column({ type: 'uuid', nullable: true })
   createdBy?: string;
 
@@ -28,6 +32,11 @@ export class HeritageVersion {
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'createdBy' })
   creator: Relation<User>;
+
+  @OneToMany(() => HeritageVersionMedia, (media) => media.version, {
+    cascade: true,
+  })
+  media: HeritageVersionMedia[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

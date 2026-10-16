@@ -1,17 +1,84 @@
 import { expect } from 'chai';
-import { ethers } from 'hardhat';
+import { network } from 'hardhat';
+import { describe, it } from "node:test";
+describe("HeritageRegistry", function () {
+  async function deployContract() {
+    const { ethers } = await network.connect();
+    const contract = await ethers.deployContract(
+      'HeritageRegistry'
+    );
 
-describe('HeritageRegistry', function () {
-  it('registers and returns a heritage hash record', async function () {
-    const registry = await ethers.deployContract('HeritageRegistry');
-    const hash = `0x${'a'.repeat(64)}`;
+    await contract.waitForDeployment();
 
-    await registry.registerHeritage('HER-001', hash, 1);
-    const record = await registry.getHeritage('HER-001');
+    return {
+      contract,
+      ethers,
+    };
+  }
 
-    expect(record[0]).to.equal('HER-001');
-    expect(record[1]).to.equal(hash);
-    expect(record[2]).to.equal(1n);
+  it("should deploy successfully", async function () {
+    const { contract, ethers } = await deployContract();
+
+    const address = await contract.getAddress();
+
+    expect(address).to.not.equal(
+      ethers.ZeroAddress
+    );
+  });
+
+  it("should publish and retrieve a heritage version", async function () {
+    const { contract, ethers } = await deployContract();
+
+    const heritageId =
+      ethers.encodeBytes32String("heritage-001");
+
+    const version = 1;
+
+    const dataHash = ethers.keccak256(
+      ethers.toUtf8Bytes("snapshot-data")
+    );
+
+    await contract.publishVersion(
+      heritageId,
+      version,
+      dataHash
+    );
+
+    const result = await contract.getVersion(
+      heritageId,
+      version
+    );
+
+    expect(result[0]).to.equal(dataHash);
+    expect(result[1]).to.be.greaterThan(0);
+  });
+
+  it("should reject publishing the same version twice", async function () {
+    const { contract, ethers } = await deployContract();
+
+    const heritageId =
+      ethers.encodeBytes32String("heritage-001");
+
+    const version = 1;
+
+    const dataHash = ethers.keccak256(
+      ethers.toUtf8Bytes("snapshot-data")
+    );
+
+    await contract.publishVersion(
+      heritageId,
+      version,
+      dataHash
+    );
+
+    await expect(
+      contract.publishVersion(
+        heritageId,
+        version,
+        dataHash
+      )
+    ).to.be.revertedWith(
+      "Version already published"
+    );
   });
 });
-

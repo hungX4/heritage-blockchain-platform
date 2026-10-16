@@ -1,52 +1,65 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { HeritageVersionService } from '../services/heritage-version.service.js';
 import { errorHandler, successHandler } from '../utils/responseHandler.js';
 
 export class HeritageVersionController {
-  static async getVersionsByHeritageId(request: Request, response: Response) {
+  static async publish(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
-      const versions = await HeritageVersionService.getVersionsByHeritageId(String(request.params.heritageId));
+      const { heritageId } = req.params;
 
-      return response.status(200).json(successHandler(200, 'Lấy lịch sử phiên bản di sản thành công', versions));
-    } catch (error) {
-      return HeritageVersionController.handleError(error, response, 'Lỗi khi lấy lịch sử phiên bản di sản');
-    }
-  }
+      const adminId = req.user?.sub;
 
-  static async getLatestVersionByHeritageId(request: Request, response: Response) {
-    try {
-      const version = await HeritageVersionService.getLatestVersionByHeritageId(String(request.params.heritageId));
-
-      return response.status(200).json(successHandler(200, 'Lấy phiên bản mới nhất thành công', version));
-    } catch (error) {
-      return HeritageVersionController.handleError(error, response, 'Lỗi khi lấy phiên bản mới nhất');
-    }
-  }
-
-  static async createVersionForHeritage(request: Request, response: Response) {
-    try {
-      const version = await HeritageVersionService.createVersionForHeritage(
-        String(request.params.heritageId),
-        request.body.createdBy
+      const version = await HeritageVersionService.publish(
+        heritageId as string,
+        adminId as string
       );
 
-      return response.status(201).json(successHandler(201, 'Tạo phiên bản và dataHash thành công', version));
+      return res.status(201).json({
+        message: 'Publish Heritage thành công',
+        data: version,
+      });
     } catch (error) {
-      return HeritageVersionController.handleError(error, response, 'Lỗi khi tạo phiên bản di sản');
+      next(error);
+    }
+  }
+  // api/version/
+  static async getVersions(req: Request, res: Response) {
+    try {
+      const search = req.query.search ? String(req.query.search) : undefined;
+      const location = req.query.location ? String(req.query.location) : undefined;
+      const page = req.query.page ? parseInt(String(req.query.page), 10) : 1;
+      const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 12;
+
+      const versions = await HeritageVersionService.getLatestVersion({ search, location, page, limit });
+
+      return res.status(200).json(
+        successHandler(200, 'Lấy danh sách phiên bản di sản thành công', versions)
+      );
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách phiên bản di sản:', error);
+      return res.status(500).json(errorHandler(500, 'Lỗi hệ thống khi lấy danh sách phiên bản'));
     }
   }
 
-  private static handleError(error: unknown, response: Response, fallbackMessage: string) {
-    if (error instanceof Error) {
-      if (error.message === 'HERITAGE_NOT_FOUND') {
-        return response.status(404).json(errorHandler(404, 'Hồ sơ di sản không tồn tại'));
+  // GET /api/versions/:id
+  static async getVersionById(req: Request<{ id: string }>, res: Response) {
+    try {
+      const { id } = req.params;
+      const version = await HeritageVersionService.getVersionById(id);
+      if (!version) {
+        return res.status(404).json(errorHandler(404, 'Không tìm thấy phiên bản di sản'));
       }
 
-      if (error.message === 'HERITAGE_MUST_BE_VERIFIED') {
-        return response.status(409).json(errorHandler(409, 'Chỉ hồ sơ VERIFIED hoặc PUBLISHED mới được tạo version/hash'));
-      }
+      return res.status(200).json(
+        successHandler(200, 'Lấy chi tiết phiên bản di sản thành công', version)
+      );
+    } catch (error) {
+      console.error('Lỗi khi lấy chi tiết phiên bản di sản:', error);
+      return res.status(500).json(errorHandler(500, 'Lỗi hệ thống khi lấy chi tiết phiên bản'));
     }
-
-    return response.status(500).json(errorHandler(500, fallbackMessage));
   }
 }

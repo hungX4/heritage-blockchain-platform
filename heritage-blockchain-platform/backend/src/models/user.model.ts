@@ -8,7 +8,7 @@ export class User {
   id: string;
 
   @Column({ type: 'uuid', nullable: true })
-  organizationId?: string;
+  organizationId?: string | null;
 
   @Column({ type: 'varchar', unique: true })
   email: string;

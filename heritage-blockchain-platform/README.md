@@ -165,4 +165,6 @@ npm --workspace blockchain run test
 ## Giới hạn Phase 1
 Phase 1 không triển khai NFT marketplace, cryptocurrency/token, payment, Ethereum Mainnet, bán vé thật, giao dịch tài sản thật, IPFS production integration, toàn bộ Heritage CRUD, toàn bộ authentication hoặc toàn bộ verification workflow.
 
-<img width="1427" height="839" alt="image" src="https://github.com/user-attachments/assets/5ac90323-058a-4b8d-bfdc-c0d9e3b1e6b4" />
+##erd diagram
+<img width="1412" height="849" alt="image" src="https://github.com/user-attachments/assets/eb4f4f17-c97b-4ff3-a6e8-cc84ffe4d220" />
+

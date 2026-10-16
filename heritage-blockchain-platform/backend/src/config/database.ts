@@ -24,7 +24,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD ?? '',
   database: process.env.DB_NAME ?? 'heritage_blockchain',
   entities: ["src/**/*.model.ts"],
-  synchronize: process.env.DB_SYNCHRONIZE === 'true',
+  synchronize: true,
   logging: process.env.DB_LOGGING === 'true',
   migrations: ['src/migrations/*.ts'],
 });

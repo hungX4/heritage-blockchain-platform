@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { HeritageService } from '../services/heritage.service.js';
 import { successHandler, errorHandler } from '../utils/responseHandler.js';
-import { HeritageStatus } from '../models/heritage.model.js';
+import { HeritageStatus } from '../types/enums/heritage.enum.js';
 
 export class HeritageController {
 
@@ -88,8 +88,7 @@ export class HeritageController {
     const heritageId = String(request.params.id);
 
     try {
-      const updatedHeritage = await HeritageService.updateHeritageStatus(heritageId, request.body.status);
-
+      const updatedHeritage = await HeritageService.updateHeritageStatus(heritageId, request.body);
       return response.status(200).json(successHandler(200, 'Cập nhật trạng thái di sản thành công', updatedHeritage));
     } catch (error) {
       console.error('Lỗi khi cập nhật trạng thái di sản:', error);

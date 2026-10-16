@@ -1,20 +1,25 @@
-import { Archive, Blocks, CheckCircle2, LayoutDashboard, ScrollText, LogOut } from 'lucide-react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Archive, Blocks, CheckCircle2, LayoutDashboard, ScrollText, LogOut, Power, PowerCircle, Goal, ChevronDown, ChevronRight, CheckSquare, FilePlus, Building2, Layers, Award, FolderCog, Users } from 'lucide-react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useState } from 'react';
 import { authApi } from '../../api/auth.api';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/heritages', label: 'Di sản', icon: Archive },
   { to: '/verification', label: 'Kiểm duyệt', icon: CheckCircle2 },
-  { to: '/blockchain', label: 'Blockchain', icon: Blocks }
+  { to: '/blockchain', label: 'Blockchain', icon: Blocks },
 ];
 
 export function Sidebar() {
   const { user, clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isHeritageMenuOpen, setIsHeritageMenuOpen] = useState(
+    location.pathname.startsWith('/heritage') || location.pathname.startsWith('/heritages')
+  );
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isOrgMenuOpen, setIsOrgMenuOpen] = useState(location.pathname.startsWith('/organization'));
+  const [isMgmtMenuOpen, setIsMgmtMenuOpen] = useState(location.pathname.startsWith('/master-data'));
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
@@ -26,6 +31,8 @@ export function Sidebar() {
       navigate('/login');
     }
   };
+
+  const isSystemAdmin = user?.role === 'SYSTEM_ADMIN';
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-stone-200 bg-white px-5 py-6">
@@ -58,6 +65,157 @@ export function Sidebar() {
             </NavLink>
           );
         })}
+
+        {/* --- MENU CHA: DI SẢN --- */}
+        <div>
+          <button
+            onClick={() => setIsHeritageMenuOpen(!isHeritageMenuOpen)}
+            className={`flex w-full items-center justify-between rounded px-3 py-2 text-sm font-medium transition-colors ${location.pathname.startsWith('/heritage') || location.pathname.startsWith('/heritages')
+              ? 'bg-stone-100 text-slate-900'
+              : 'text-slate-600 hover:bg-stone-100'
+              }`}
+          >
+            <div className="flex items-center gap-3">
+              <Archive size={18} />
+              <span>Di sản</span>
+            </div>
+            {isHeritageMenuOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </button>
+
+          {/* SUB MENU DI SẢN */}
+          {isHeritageMenuOpen && (
+            <div className="mt-1 ml-4 space-y-1 border-l-2 border-stone-200 pl-3">
+              <NavLink
+                to="/heritage/list"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 rounded px-2.5 py-1.5 text-xs font-medium ${isActive ? 'bg-emerald-50 text-emerald-800 font-semibold' : 'text-slate-600 hover:bg-stone-100'
+                  }`
+                }
+              >
+                <ScrollText size={14} /> Danh sách di sản
+              </NavLink>
+
+              <NavLink
+                to="/heritage/create"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 rounded px-2.5 py-1.5 text-xs font-medium ${isActive ? 'bg-emerald-50 text-emerald-800 font-semibold' : 'text-slate-600 hover:bg-stone-100'
+                  }`
+                }
+              >
+                <FilePlus size={14} /> Lập hồ sơ di sản
+              </NavLink>
+            </div>
+          )}
+        </div>
+
+        {/* --- MENU CHA: QUẢN LÝ (CHỈ SYSTEM_ADMIN THẤY) --- */}
+        {isSystemAdmin && (
+          <div>
+            <button
+              onClick={() => setIsMgmtMenuOpen(!isMgmtMenuOpen)}
+              className={`flex w-full items-center justify-between rounded px-3 py-2 text-sm font-medium transition-colors ${location.pathname.startsWith('/master-data')
+                ? 'bg-stone-100 text-slate-900'
+                : 'text-slate-600 hover:bg-stone-100'
+                }`}
+            >
+              <div className="flex items-center gap-3">
+                <FolderCog size={18} />
+                <span>Quản lý</span>
+              </div>
+              {isMgmtMenuOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+
+            {isMgmtMenuOpen && (
+              <div className="mt-1 ml-4 space-y-1 border-l-2 border-stone-200 pl-3">
+
+                <NavLink
+                  to="/master-data/users"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 rounded px-2.5 py-1.5 text-xs font-medium ${isActive ? 'bg-emerald-50 font-semibold text-emerald-800' : 'text-slate-600 hover:bg-stone-100'
+                    }`
+                  }
+                >
+                  <Users size={14} /> Người dùng & Chuyên gia
+                </NavLink>
+                <NavLink
+                  to="/master-data/heritage-fields"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 rounded px-2.5 py-1.5 text-xs font-medium ${isActive ? 'bg-emerald-50 font-semibold text-emerald-800' : 'text-slate-600 hover:bg-stone-100'
+                    }`
+                  }
+                >
+                  <Layers size={14} /> Loại hình di sản
+                </NavLink>
+
+                <NavLink
+                  to="/master-data/specializations"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 rounded px-2.5 py-1.5 text-xs font-medium ${isActive ? 'bg-emerald-50 font-semibold text-emerald-800' : 'text-slate-600 hover:bg-stone-100'
+                    }`
+                  }
+                >
+                  <Award size={14} /> Chuyên môn
+                </NavLink>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- MENU CHA: TỔ CHỨC --- */}
+        <div>
+          <button
+            onClick={() => setIsOrgMenuOpen(!isOrgMenuOpen)}
+            className={`flex w-full items-center justify-between rounded px-3 py-2 text-sm font-medium transition-colors ${location.pathname.startsWith('/organization')
+              ? 'bg-stone-100 text-slate-900'
+              : 'text-slate-600 hover:bg-stone-100'
+              }`}
+          >
+            <div className="flex items-center gap-3">
+              <Goal size={18} />
+              <span>Tổ chức</span>
+            </div>
+            {isOrgMenuOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </button>
+
+          {/* --- SUB MENU CON --- */}
+          {isOrgMenuOpen && (
+            <div className="mt-1 ml-4 space-y-1 border-l-2 border-stone-200 pl-3">
+
+              <NavLink
+                to="/organization/list"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 rounded px-2.5 py-1.5 text-xs font-medium ${isActive ? 'bg-emerald-50 text-emerald-800 font-semibold' : 'text-slate-600 hover:bg-stone-100'
+                  }`
+                }
+              >
+                <Building2 size={14} /> Danh sách tổ chức
+              </NavLink>
+              {/* Mục con 1: Chỉ System Admin mới nhìn thấy */}
+              {isSystemAdmin && (
+                <NavLink
+                  to="/organization/pending"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 rounded px-2.5 py-1.5 text-xs font-medium ${isActive ? 'bg-emerald-50 text-emerald-800 font-semibold' : 'text-slate-600 hover:bg-stone-100'
+                    }`
+                  }
+                >
+                  <CheckSquare size={14} /> Duyệt yêu cầu
+                </NavLink>
+              )}
+
+              {/* Mục con 2: Mọi User đều thấy */}
+              <NavLink
+                to="/organization/request"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 rounded px-2.5 py-1.5 text-xs font-medium ${isActive ? 'bg-emerald-50 text-emerald-800 font-semibold' : 'text-slate-600 hover:bg-stone-100'
+                  }`
+                }
+              >
+                <FilePlus size={14} /> Đăng ký tổ chức
+              </NavLink>
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* User Info & Logout (Nằm dưới cùng) */}

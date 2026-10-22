@@ -24,18 +24,23 @@ import {
   Globe,
 } from 'lucide-react';
 import { heritageVersionApi } from '../api/heritage-version.api';
+import { heritageApi } from '../api/heritage.api';
 import { integrityApi } from '../api/integrity.api';
 import {
+  Heritage,
+  HeritageStatus,
   HeritageVersionItem,
   HeritageIntegrityResult,
   LocationItem,
   HeritageVersionMedia,
 } from '../types/heritage';
+import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
 
 export function HeritageDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const currentUser = useAuthStore((state) => state.user);
 
   const [versionData, setVersionData] = useState<HeritageVersionItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -45,6 +50,8 @@ export function HeritageDetailPage() {
   const [integrityData, setIntegrityData] = useState<HeritageIntegrityResult | null>(null);
   const [selectedImage, setSelectedImage] = useState<{ url: string; caption?: string } | null>(null);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [heritageRecord, setHeritageRecord] = useState<Heritage | null>(null);
+  const [statusSubmitting, setStatusSubmitting] = useState(false);
 
   // Tải chi tiết phiên bản di sản
   const fetchDetail = async () => {
@@ -54,6 +61,8 @@ export function HeritageDetailPage() {
       const res = await heritageVersionApi.getVersionById(id);
       if (res.data) {
         setVersionData(res.data);
+        const heritageRes = await heritageApi.getById(res.data.heritageId);
+        setHeritageRecord(heritageRes.data);
       } else {
         toast.error('Không tìm thấy dữ liệu di sản');
       }
@@ -62,6 +71,21 @@ export function HeritageDetailPage() {
       toast.error('Không thể lấy thông tin di sản');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    if (!heritageRecord) return;
+    const nextStatus = event.target.value as HeritageStatus;
+    try {
+      setStatusSubmitting(true);
+      const response = await heritageApi.updateStatus(heritageRecord.id, nextStatus);
+      setHeritageRecord(response.data);
+      toast.success('Đã cập nhật trạng thái hồ sơ');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Không thể cập nhật trạng thái hồ sơ');
+    } finally {
+      setStatusSubmitting(false);
     }
   };
 
@@ -164,6 +188,26 @@ export function HeritageDetailPage() {
           {verifying ? 'Đang xác thực Integrity...' : 'Xác thực Toàn vẹn Blockchain'}
         </button>
       </div>
+
+      {currentUser?.role === 'SYSTEM_ADMIN' && heritageRecord && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white p-4">
+          <div>
+            <p className="text-sm font-semibold text-slate-900">Trạng thái hồ sơ</p>
+            <p className="text-xs text-slate-500">Chỉ quản trị viên hệ thống có thể thay đổi trạng thái.</p>
+          </div>
+          <select
+            aria-label="Cập nhật trạng thái hồ sơ"
+            value={heritageRecord.status}
+            onChange={handleStatusChange}
+            disabled={statusSubmitting}
+            className="min-w-52 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-emerald-600 focus:outline-none disabled:opacity-50"
+          >
+            {Object.values(HeritageStatus).map((status) => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="space-y-6 max-w-6xl mx-auto">
         {/* Card Tổng Quan */}

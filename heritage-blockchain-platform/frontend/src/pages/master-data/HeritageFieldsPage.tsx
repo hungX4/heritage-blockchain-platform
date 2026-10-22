@@ -14,12 +14,14 @@ export function HeritageFieldsPage() {
 
   // Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isMappingModalOpen, setIsMappingModalOpen] = useState(false);
   const [selectedField, setSelectedField] = useState<HeritageField | null>(null);
 
   // Form State
   const [newCode, setNewCode] = useState('');
   const [newName, setNewName] = useState('');
+  const [editName, setEditName] = useState('');
   const [selectedSpecIds, setSelectedSpecIds] = useState<string[]>([]);
   const debouncedSearch = useDebounce(search, 600);
   const fetchData = async () => {
@@ -102,6 +104,25 @@ export function HeritageFieldsPage() {
     }
   };
 
+  const openEditModal = (field: HeritageField) => {
+    setSelectedField(field);
+    setEditName(field.name);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdate = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!selectedField) return;
+    try {
+      await masterDataApi.updateHeritageField(selectedField.id, { name: editName.trim() });
+      setIsEditModalOpen(false);
+      setSelectedField(null);
+      fetchData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Không thể cập nhật lĩnh vực di sản');
+    }
+  };
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -153,7 +174,14 @@ export function HeritageFieldsPage() {
               fields.map((field) => (
                 <tr key={field.id} className="hover:bg-stone-50">
                   <td className="px-4 py-3 font-medium text-slate-700">{field.code}</td>
-                  <td className="px-4 py-3 text-slate-800 font-semibold">{field.name}</td>
+                  <td className="px-4 py-3 text-slate-800 font-semibold">
+                    <div className="flex items-center gap-2">
+                      <span>{field.name}</span>
+                      <button onClick={() => openEditModal(field)} className="rounded p-1 text-slate-400 hover:bg-stone-200 hover:text-slate-700" title="Sửa tên lĩnh vực" aria-label={`Sửa ${field.name}`}>
+                        <Edit3 size={14} />
+                      </button>
+                    </div>
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-1.5">
                       {field.specializationMappings && field.specializationMappings.length > 0 ? (
@@ -259,6 +287,21 @@ export function HeritageFieldsPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {isEditModalOpen && selectedField && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <form onSubmit={handleUpdate} className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-slate-900">Cập nhật lĩnh vực di sản</h2>
+            <p className="mt-1 text-xs text-slate-500">Mã lĩnh vực: {selectedField.code}</p>
+            <label className="mt-4 block text-xs font-semibold text-slate-600" htmlFor="heritage-field-name">Tên lĩnh vực</label>
+            <input id="heritage-field-name" required value={editName} onChange={(event) => setEditName(event.target.value)} className="mt-1 w-full rounded-lg border border-stone-200 p-2 text-sm focus:border-emerald-600 focus:outline-none" />
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => setIsEditModalOpen(false)} className="rounded-lg border px-4 py-2 text-sm text-slate-600 hover:bg-stone-100">Hủy</button>
+              <button type="submit" disabled={!editName.trim()} className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">Lưu thay đổi</button>
+            </div>
+          </form>
         </div>
       )}
 

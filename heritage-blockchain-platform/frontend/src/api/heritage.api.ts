@@ -32,6 +32,12 @@ export const heritageApi = {
     return response.data;
   },
 
+  // PATCH /api/heritages/:id/status
+  updateStatus: async (id: string, status: HeritageStatus): Promise<ApiResponse<Heritage>> => {
+    const response = await axiosClient.patch(`/heritages/${id}/status`, { status });
+    return response.data;
+  },
+
   // DELETE /api/heritages/:id
   delete: async (id: string): Promise<ApiResponse<void>> => {
     const response = await axiosClient.delete(`/heritages/${id}`);

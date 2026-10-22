@@ -35,7 +35,6 @@ export class HeritageController {
     }
   }
 
-  // POST /api/heritages
   static async createHeritage(request: Request, response: Response) {
     try {
       const heritageData = request.body;

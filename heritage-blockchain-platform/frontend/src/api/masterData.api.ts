@@ -24,6 +24,9 @@ export const masterDataApi = {
   createHeritageField: (data: { code: string; name: string }) =>
     axiosClient.post<{ success: boolean; data: HeritageField }>('/heritage-fields', data),
 
+  updateHeritageField: (id: string, data: { name: string }) =>
+    axiosClient.put<{ success: boolean; data: HeritageField }>(`/heritage-fields/${id}`, data),
+
   deleteHeritageField: (id: string) =>
     axiosClient.delete(`/heritage-fields/${id}`),
 

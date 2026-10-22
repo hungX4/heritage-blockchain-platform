@@ -64,7 +64,7 @@ export class TokenServices {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
-        organizationId: user.organizationId
+        organizationId: user.organizationId ?? undefined
       },
       refreshToken: rawToken
     };

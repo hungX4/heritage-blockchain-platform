@@ -2,6 +2,31 @@
 import { HeritageMediaItem, LegalDocUploadResponse } from "../types/heritage";
 import axiosClient from "./axiosClient";
 
+export const documentUploadApi = {
+  uploadOne: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axiosClient.post<{ success: boolean; data: { fileUrl: string } }>(
+      '/upload/document',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response.data.data.fileUrl;
+  },
+
+  uploadMany: async (files: File[]) => {
+    if (files.length > 3) throw new Error('Chỉ được tải tối đa 3 tài liệu');
+    const formData = new FormData();
+    files.forEach((file) => formData.append('files', file));
+    const response = await axiosClient.post<{ success: boolean; data: string[] }>(
+      '/upload/documents',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response.data.data;
+  },
+};
+
 export const mediaApi = {
   upload: async (file: File, type?: string, caption?: string) => {
     const formData = new FormData();

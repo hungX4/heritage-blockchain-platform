@@ -18,9 +18,10 @@ import {
 import { heritageApi } from '../services/heritage.api';
 import { HeritageVersion, heritageVersionApi } from '../api/heritage-version.api';
 import type { Heritage } from '../types/heritage';
+import { blockchainApi, type BlockchainRecord } from '../services/blockchain.api';
 
 export function BlockchainRecordsPage() {
-  const [activeTab, setActiveTab] = useState<'verified' | 'published'>('verified');
+  const [activeTab, setActiveTab] = useState<'verified' | 'published' | 'records'>('verified');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,6 +29,8 @@ export function BlockchainRecordsPage() {
 
   const [verifiedList, setVerifiedList] = useState<Heritage[]>([]);
   const [publishedList, setPublishedList] = useState<Heritage[]>([]);
+  const [blockchainRecords, setBlockchainRecords] = useState<BlockchainRecord[]>([]);
+  const [recordsError, setRecordsError] = useState('');
 
   // 1. TÍCH HỢP DEBOUNCE (400ms) CHO TÌM KIẾM
   useEffect(() => {
@@ -58,6 +61,14 @@ export function BlockchainRecordsPage() {
       }
       if (publishedRes.data?.data) {
         setPublishedList(publishedRes.data.data);
+      }
+      try {
+        const recordsRes = await blockchainApi.records();
+        setBlockchainRecords(recordsRes.data.data || []);
+        setRecordsError('');
+      } catch (error) {
+        console.error('Lỗi khi tải sổ bản ghi Blockchain:', error);
+        setRecordsError('Không thể tải danh sách bản ghi Blockchain.');
       }
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu di sản:', error);
@@ -218,6 +229,15 @@ export function BlockchainRecordsPage() {
               <ShieldCheck size={15} />
               ĐÃ LƯU SỔ CÁI BLOCKCHAIN ({publishedList.length})
             </button>
+            <button
+              onClick={() => setActiveTab('records')}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded transition-all ${activeTab === 'records'
+                ? 'bg-white text-blue-900 shadow-sm border border-slate-200'
+                : 'text-slate-600 hover:text-slate-900'
+                }`}
+            >
+              <Database size={15} /> BẢN GHI ON-CHAIN ({blockchainRecords.length})
+            </button>
           </div>
 
           {/* Ô TÌM KIẾM CÓ TÍCH HỢP DEBOUNCE */}
@@ -376,6 +396,52 @@ export function BlockchainRecordsPage() {
                     );
                   })
                 )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeTab === 'records' && (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] text-left text-xs text-slate-700">
+              <thead className="border-b border-slate-300 bg-slate-100 text-[11px] font-bold uppercase text-slate-700">
+                <tr>
+                  <th className="px-4 py-3">Di sản</th>
+                  <th className="px-4 py-3">Phiên bản</th>
+                  <th className="px-4 py-3">Data hash</th>
+                  <th className="px-4 py-3">Người xác thực</th>
+                  <th className="px-4 py-3">Transaction</th>
+                  <th className="px-4 py-3">Block</th>
+                  <th className="px-4 py-3">Thời gian ghi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 bg-white">
+                {loading ? (
+                  <tr><td colSpan={7} className="px-6 py-10 text-center text-slate-500">Đang tải bản ghi...</td></tr>
+                ) : recordsError ? (
+                  <tr><td colSpan={7} className="px-6 py-10 text-center text-rose-700">{recordsError}</td></tr>
+                ) : blockchainRecords.length === 0 ? (
+                  <tr><td colSpan={7} className="px-6 py-10 text-center text-slate-500">Backend hiện chưa trả về bản ghi Blockchain nào.</td></tr>
+                ) : blockchainRecords.map((record) => (
+                  <tr key={record.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-slate-900">{record.heritage?.name || record.heritageId}</div>
+                      {record.heritage?.heritageCode && <div className="mt-0.5 font-mono text-[10px] text-slate-500">{record.heritage.heritageCode}</div>}
+                    </td>
+                    <td className="px-4 py-3">v{record.version}</td>
+                    <td className="max-w-56 truncate px-4 py-3 font-mono" title={record.dataHash}>{record.dataHash}</td>
+                    <td className="px-4 py-3">{record.verifier || '—'}</td>
+                    <td className="px-4 py-3">
+                      {record.transactionHash ? (
+                        <a href={`https://sepolia.etherscan.io/tx/${record.transactionHash}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-mono text-blue-800 hover:underline">
+                          {record.transactionHash.slice(0, 10)}…{record.transactionHash.slice(-8)} <ExternalLink size={11} />
+                        </a>
+                      ) : '—'}
+                    </td>
+                    <td className="px-4 py-3 font-mono">{record.blockNumber ?? '—'}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">{record.createdAt ? new Date(record.createdAt).toLocaleString('vi-VN') : '—'}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

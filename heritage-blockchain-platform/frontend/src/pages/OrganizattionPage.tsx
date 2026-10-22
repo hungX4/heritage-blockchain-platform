@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Building2, Mail, FileText, UploadCloud, Loader2, X } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
+import { documentUploadApi } from '../api/media.api';
 import { OrganizationFormValues, organizationSchema } from '../types/organization';
 import toast from 'react-hot-toast';
 
@@ -34,7 +35,11 @@ export default function CreateOrganizationPage() {
 
     const newFiles = Array.from(e.target.files);
     // Cộng dồn file cũ và file mới, tối đa 3 file
-    const updatedFiles = [...selectedFiles, ...newFiles].slice(0, 3);
+    const updatedFiles = [...selectedFiles, ...newFiles];
+    if (updatedFiles.length > 3) {
+      toast.error('Bạn chỉ có thể tải tối đa 3 tệp.');
+      updatedFiles.splice(3);
+    }
 
     setSelectedFiles(updatedFiles);
     // Cập nhật giá trị vào React Hook Form để Zod validate
@@ -53,17 +58,8 @@ export default function CreateOrganizationPage() {
       setIsSubmitting(true);
       setSuccessMessage('');
 
-      // BƯỚC 1: Đẩy File lên API Upload
-      const formData = new FormData();
-      selectedFiles.forEach((file) => {
-        formData.append('files', file); // 'files' khớp với multer.array('files')
-      });
-
-      const uploadRes = await axiosClient.post('/upload/documents', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      const fileUrls = uploadRes.data.data.urls;
+      // BƯỚC 1: Đẩy tối đa 3 file lên API Upload
+      const fileUrls = await documentUploadApi.uploadMany(selectedFiles);
 
       // BƯỚC 2: Gửi JSON đăng ký Tổ chức
       const payload = {
@@ -173,9 +169,11 @@ export default function CreateOrganizationPage() {
                   accept="image/jpeg, image/png, application/pdf"
                   onChange={handleFileChange}
                   className="hidden"
+                  disabled={selectedFiles.length >= 3 || isSubmitting}
                 />
               </label>
             </div>
+            <p className="mt-2 text-xs text-slate-500">Đã chọn {selectedFiles.length}/3 tệp. Mỗi tệp tối đa 5 MB.</p>
 
             {/* Danh sách Preview Ảnh có nút Xóa */}
             {selectedFiles.length > 0 && (

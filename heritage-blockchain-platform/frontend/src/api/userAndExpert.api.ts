@@ -41,6 +41,9 @@ export const userAndExpertApi = {
     return axiosClient.get<GetUsersResponse>('/users', { params });
   },
 
+  getUserById: (userId: string) =>
+    axiosClient.get<{ success: boolean; data: User }>(`/users/${userId}`),
+
   //Lấy hồ sơ Chuyên gia theo userId (ĐỂ LẤY CHUYÊN MÔN CŨ)
   getExpertByUserId: (userId: string) => {
     return axiosClient.get<{ success: boolean; data: any }>(`/experts/user/${userId}`);

@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { blockchainRouter } from './blockchain.routes.js';
 import { healthRouter } from './health.routes.js';
-import { heritageVersionRouter } from './heritage-version.routes.js';
 import { heritageRouter } from './heritage.routes.js';
 import { authRouter } from './auth.routes.js';
 import organizationRoute from './organization.routes.js';

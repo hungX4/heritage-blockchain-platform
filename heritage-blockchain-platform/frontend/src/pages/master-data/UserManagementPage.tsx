@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, UserCheck, ShieldAlert, Award, X, Check, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, UserCheck, ShieldAlert, Award, X, Check, RefreshCw, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { userAndExpertApi, User, Specialization, PaginationMeta } from '../../api/userAndExpert.api';
 
 export function UserManagementPage() {
@@ -22,6 +22,20 @@ export function UserManagementPage() {
   const [selectedSpecIds, setSelectedSpecIds] = useState<string[]>([]);
   const [loadingModal, setLoadingModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [detailUser, setDetailUser] = useState<User | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
+  const openUserDetail = async (user: User) => {
+    setLoadingDetail(true);
+    try {
+      const res = await userAndExpertApi.getUserById(user.id);
+      setDetailUser(res.data.data);
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Không thể tải chi tiết người dùng');
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
 
   // Fetch danh sách người dùng khi page hoặc search thay đổi
   const fetchUsers = async (targetPage = page) => {
@@ -218,6 +232,12 @@ export function UserManagementPage() {
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
                       <button
+                        onClick={() => openUserDetail(user)}
+                        className="inline-flex items-center gap-1 rounded bg-stone-100 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-stone-200"
+                      >
+                        <Eye size={14} /> Chi tiết
+                      </button>
+                      <button
                         onClick={() => openAssignModal(user)}
                         className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
                       >
@@ -273,6 +293,31 @@ export function UserManagementPage() {
           </div>
         )}
       </div>
+
+      {loadingDetail && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
+          <div className="rounded-lg bg-white px-6 py-4 text-sm text-slate-600">Đang tải thông tin người dùng...</div>
+        </div>
+      )}
+
+      {detailUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setDetailUser(null)}>
+          <section className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-stone-200 pb-3">
+              <h2 className="text-lg font-semibold text-slate-900">Chi tiết người dùng</h2>
+              <button aria-label="Đóng" onClick={() => setDetailUser(null)} className="text-slate-400 hover:text-slate-700"><X size={20} /></button>
+            </div>
+            <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+              <div><dt className="text-xs text-slate-500">Họ và tên</dt><dd className="mt-1 font-medium text-slate-900">{detailUser.fullName}</dd></div>
+              <div><dt className="text-xs text-slate-500">Vai trò</dt><dd className="mt-1 font-medium text-slate-900">{detailUser.role}</dd></div>
+              <div><dt className="text-xs text-slate-500">Email</dt><dd className="mt-1 break-all text-slate-800">{detailUser.email}</dd></div>
+              <div><dt className="text-xs text-slate-500">Tổ chức</dt><dd className="mt-1 text-slate-800">{detailUser.organization?.name || 'Chưa thuộc tổ chức'}</dd></div>
+              <div><dt className="text-xs text-slate-500">Ngày tạo tài khoản</dt><dd className="mt-1 text-slate-800">{detailUser.createdAt ? new Date(detailUser.createdAt).toLocaleString('vi-VN') : '—'}</dd></div>
+              <div><dt className="text-xs text-slate-500">Mã người dùng</dt><dd className="mt-1 break-all font-mono text-xs text-slate-700">{detailUser.id}</dd></div>
+            </dl>
+          </section>
+        </div>
+      )}
 
       {/* MODAL PHÂN QUYỀN EXPERT */}
       {selectedUser && (

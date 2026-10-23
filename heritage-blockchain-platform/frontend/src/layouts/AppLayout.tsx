@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Navbar } from '../components/layout/Navbar';
+import { Footer } from '../components/layout/Footer';
 
 export function AppLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -14,10 +15,12 @@ export function AppLayout() {
       {/* Navbar nổi cố định trên cùng */}
       <Navbar />
 
+
       {/* Main chứa Hero và các trang nội dung - Tràn 100% không vướng Padding */}
       <main className="w-full p-0 m-0">
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
 }

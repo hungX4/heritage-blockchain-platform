@@ -18,6 +18,7 @@ import { HeritageFieldsPage } from './pages/master-data/HeritageFieldsPage';
 import { SpecializationsPage } from './pages/master-data/SpecializationsPage';
 import { UserManagementPage } from './pages/master-data/UserManagementPage';
 import { HeritagePage } from './pages/HeritagePage';
+import { HeroSection } from './components/layout/HeroSection';
 
 export default function App() {
 
@@ -41,7 +42,7 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
 
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<HeroSection />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/heritage/create" element={<CreateHeritage />} />
           <Route path="/heritage/list" element={<HeritagePage />} />

@@ -66,7 +66,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full font-sans select-none pt-0">
+    <header className="absolute top-0 left-0 w-full z-50 font-sans select-none flex justify-center pointer-events-none">
       {/* 🟢 KHUNG NAVBAR W-FIT: ÔM SÁT CHIỀU DÀI THỰC TẾ & CÂN GIỮA MÀN HÌNH */}
       <div className="mx-auto flex w-fit max-w-6xl items-stretch bg-[#A50C1E] text-white shadow-2xl border-b border-red-900/50">
 

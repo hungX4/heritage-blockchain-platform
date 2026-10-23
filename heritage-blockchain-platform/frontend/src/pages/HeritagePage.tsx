@@ -19,18 +19,8 @@ import { heritageVersionApi } from '../api/heritage-version.api';
 import { masterDataApi, HeritageField } from '../api/masterData.api';
 import { HeritageVersionItem, LocationItem } from '../types/heritage';
 import toast from 'react-hot-toast';
+import { VIETNAM_LOCATIONS } from '../constants/location';
 
-// 🟢 DANH SÁCH TỈNH / THÀNH VÀ QUẬN / HUYỆN MẪU
-const VIETNAM_LOCATIONS: Record<string, string[]> = {
-  'Hà Nội': ['Ba Đình', 'Hoàn Kiếm', 'Tây Hồ', 'Đống Đa', 'Cầu Giấy', 'Bắc Từ Liêm', 'Nam Từ Liêm', 'Đông Anh', 'Sóc Sơn', 'Gia Lâm'],
-  'TP. Hồ Chí Minh': ['Quận 1', 'Quận 3', 'Quận 5', 'Quận 7', 'Thành phố Thủ Đức', 'Bình Thạnh', 'Tân Bình', 'Củ Chi', 'Cần Giờ'],
-  'Thừa Thiên Huế': ['TP. Huế', 'Thị xã Hương Thủy', 'Thị xã Hương Trà', 'Huyện Phong Điền', 'Huyện Quảng Điền', 'Huyện Phú Vang'],
-  'Bắc Ninh': ['TP. Bắc Ninh', 'Thị xã Từ Sơn', 'Huyện Yên Phong', 'Huyện Quế Võ', 'Huyện Tiên Du', 'Huyện Thuận Thành'],
-  'Gia Lai': ['TP. Pleiku', 'Thị xã An Khê', 'Thị xã Ayun Pa', 'Huyện Chư Păh', 'Huyện Đăk Đoa', 'Huyện Ia Grai'],
-  'Phú Thọ': ['TP. Việt Trì', 'Thị xã Phú Thọ', 'Huyện Lâm Thao', 'Huyện Phù Ninh', 'Huyện Cẩm Khê', 'Huyện Tam Nông'],
-  'Quảng Nam': ['TP. Hội An', 'TP. Tam Kỳ', 'Huyện Duy Xuyên', 'Huyện Điện Bàn', 'Huyện Nam Giang'],
-  'Lâm Đồng': ['TP. Đà Lạt', 'TP. Bảo Lộc', 'Huyện Lạc Dương', 'Huyện Đơn Dương', 'Huyện Đức Trọng'],
-};
 
 export function HeritagePage() {
   const [versions, setVersions] = useState<HeritageVersionItem[]>([]);

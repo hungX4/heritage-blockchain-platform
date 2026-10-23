@@ -28,7 +28,6 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 🟢 CHỈ DÀNH CHO NHỮNG AI CÓ ROLE (KHÔNG PHẢI 'USER')
   const isManagementRole = Boolean(user?.role && user.role !== 'USER');
   const isSystemAdmin = user?.role === 'SYSTEM_ADMIN';
 
@@ -67,15 +66,15 @@ export function Navbar() {
 
   return (
     <header className="absolute top-0 left-0 w-full z-50 font-sans select-none flex justify-center pointer-events-none">
-      {/* 🟢 KHUNG NAVBAR W-FIT: ÔM SÁT CHIỀU DÀI THỰC TẾ & CÂN GIỮA MÀN HÌNH */}
-      <div className="mx-auto flex w-fit max-w-6xl items-stretch bg-[#A50C1E] text-white shadow-2xl border-b border-red-900/50">
+      {/* 🟢 KHUNG NAVBAR TRONG SUỐT (GLASSMORPHISM) */}
+      <div className="pointer-events-auto flex w-fit max-w-6xl items-stretch bg-black/10  text-white shadow-2xl  transition-all duration-300">
 
-        {/* ================= CỘT 1: LOGO VNFAM (BÊN TRÁI) ================= */}
+        {/* ================= CỘT 1: LOGO VNFAM (HOVER LÊN MÀU ĐỎ) ================= */}
         <NavLink
           to="/"
-          className="flex items-center gap-3.5 border-r border-white/30 bg-[#A50C1E] px-6 py-3 transition-opacity hover:opacity-95 shrink-0"
+          className="flex items-center gap-3.5  border-white/20 bg-transparent px-6 py-3 transition-colors duration-300 hover:bg-[#A50C1E] shrink-0"
         >
-          <div className="flex h-12 w-16 items-center justify-center border-2 border-white p-1">
+          <div className="flex h-12 w-16 items-center justify-center  p-1">
             <svg
               viewBox="0 0 100 65"
               fill="none"
@@ -104,18 +103,18 @@ export function Navbar() {
           </div>
         </NavLink>
 
-        {/* ================= CỘT 2: CỘT GIỮA DYNAMIC (CO GIÃN THEO DANH MỤC BÊN DƯỚI) ================= */}
-        <div className={`flex flex-col justify-between ${isManagementRole ? 'border-r border-white/30' : ''}`}>
+        {/* ================= CỘT 2: CỘT GIỮA CHIA 2 TẦNG ================= */}
+        <div className={`flex flex-col justify-between ${isManagementRole ? ' ' : ''}`}>
 
-          {/* 🟢 TẦNG TRÊN: TỰ ĐỘNG BÁM THEO CHIỀU RỘNG CỦA TẦNG DƯỚI (W-FULL) */}
-          <div className="flex items-center justify-center border-b border-white/30 px-4 h-11 w-full">
+          {/* 🟢 TẦNG TRÊN: Ô TÌM KIẾM HOVER ĐỔI MÀU ĐỎ */}
+          <div className="flex items-center justify-center  px-4 h-11 w-full">
             <form onSubmit={handleSearchSubmit} className="w-full relative flex items-center">
               <input
                 type="text"
                 placeholder="Tìm kiếm di sản, sự kiện..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-full bg-black/20 border border-white/40 py-1.5 pl-4 pr-10 text-xs text-white placeholder-white/70 focus:bg-black/35 focus:border-amber-300 focus:outline-none transition-all shadow-inner"
+                className="w-full rounded-full bg-white/10  py-1.5 pl-4 pr-10 text-xs text-white placeholder-white/70 hover:bg-[#A50C1E]/70 focus:bg-[#A50C1E] focus:border-amber-300 focus:outline-none transition-all duration-300 shadow-inner"
               />
               <button type="submit" className="absolute right-3.5 text-white/80 hover:text-amber-300 focus:outline-none">
                 <Search size={16} />
@@ -123,12 +122,12 @@ export function Navbar() {
             </form>
           </div>
 
-          {/* 🟢 TẦNG DƯỚI: ĐỘ DÀI CÁC MỤC QUYẾT ĐỊNH CHIỀU RỘNG CẢ CỘT GIỮA */}
-          <nav className="flex items-center justify-center gap-6 sm:gap-10 px-6 h-11 font-bold text-xs sm:text-sm tracking-wider uppercase whitespace-nowrap">
+          {/* 🟢 TẦNG DƯỚI: CÁC MỤC MENU HOVER TỪNG CHỖ NỔI MÀU ĐỎ */}
+          <nav className="flex items-center justify-center gap-2 sm:gap-4 px-3 h-11 font-bold text-xs sm:text-sm tracking-wider uppercase whitespace-nowrap">
             <NavLink
               to="/about"
               className={({ isActive }) =>
-                `py-1 transition-all hover:underline hover:underline-offset-8 hover:decoration-2 ${isActive ? 'underline underline-offset-8 decoration-2 text-amber-300 font-extrabold' : 'text-white'
+                `px-3 py-1.5 rounded transition-all duration-300 hover:bg-[#A50C1E] ${isActive ? 'bg-[#A50C1E] text-amber-300 font-extrabold shadow-sm' : 'text-white'
                 }`
               }
             >
@@ -138,7 +137,7 @@ export function Navbar() {
             <NavLink
               to="/heritage/list"
               className={({ isActive }) =>
-                `py-1 transition-all hover:underline hover:underline-offset-8 hover:decoration-2 ${isActive ? 'underline underline-offset-8 decoration-2 text-amber-300 font-extrabold' : 'text-white'
+                `px-3 py-1.5 rounded transition-all duration-300 hover:bg-[#A50C1E] ${isActive ? 'bg-[#A50C1E] text-amber-300 font-extrabold shadow-sm' : 'text-white'
                 }`
               }
             >
@@ -148,7 +147,7 @@ export function Navbar() {
             <NavLink
               to="/events"
               className={({ isActive }) =>
-                `py-1 transition-all hover:underline hover:underline-offset-8 hover:decoration-2 ${isActive ? 'underline underline-offset-8 decoration-2 text-amber-300 font-extrabold' : 'text-white'
+                `px-3 py-1.5 rounded transition-all duration-300 hover:bg-[#A50C1E] ${isActive ? 'bg-[#A50C1E] text-amber-300 font-extrabold shadow-sm' : 'text-white'
                 }`
               }
             >
@@ -158,7 +157,7 @@ export function Navbar() {
             <NavLink
               to="/heritage/create"
               className={({ isActive }) =>
-                `py-1 transition-all hover:underline hover:underline-offset-8 hover:decoration-2 ${isActive ? 'underline underline-offset-8 decoration-2 text-amber-300 font-extrabold' : 'text-white'
+                `px-3 py-1.5 rounded transition-all duration-300 hover:bg-[#A50C1E] ${isActive ? 'bg-[#A50C1E] text-amber-300 font-extrabold shadow-sm' : 'text-white'
                 }`
               }
             >
@@ -168,12 +167,12 @@ export function Navbar() {
 
         </div>
 
-        {/* ================= CỘT 3: CHỈ HIỂN THỊ KHI CÓ ROLE ================= */}
+        {/* ================= CỘT 3: CỘT USER (HOVER VÀO LÊN MÀU ĐỎ) ================= */}
         {isManagementRole && (
-          <div className="flex items-center justify-center px-6 shrink-0 relative" ref={dropdownRef}>
+          <div className="flex items-center justify-center px-6 shrink-0 relative transition-colors duration-300 hover:bg-[#A50C1E]" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/90 bg-white/10 text-white font-bold text-sm shadow-md transition-all hover:scale-105 hover:bg-white/20 hover:border-amber-300 focus:outline-none"
+              className="flex h-11 w-11 items-center justify-center rounded-full  bg-white/10 text-white font-bold text-sm shadow-md transition-all hover:scale-105 hover:bg-white/30 hover:border-amber-300 focus:outline-none"
               title={`${user?.fullName} (${user?.role})`}
             >
               {user?.fullName?.charAt(0).toUpperCase() || <User size={18} />}

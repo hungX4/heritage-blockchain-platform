@@ -109,7 +109,7 @@ export function HeroSection() {
 
             {/* Cụm nội dung Slider */}
             <div className="absolute inset-0 flex items-center pt-20 sm:pt-28">
-              <div className="mx-auto max-w-6xl w-full px-6 sm:px-12">
+              <div className="w-full px-12 sm:px-20 lg:px-28 xl:px-36">
                 {/* 🟢 GIỚI HẠN CHIỀU RỘNG KHỐI CHỮ CHỈ TỪ 40% ĐẾN 45% MÀN HÌNH */}
                 <div className="w-full md:w-[45%] lg:w-[42%] space-y-3 sm:space-y-4">
                   {/* Badge */}

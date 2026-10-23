@@ -19,7 +19,6 @@ export function MediaUploader({ mediaList, onChange }: MediaUploaderProps) {
     setUploading(true);
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
-        // Tự đoán MediaType cơ bản
         let type = 'IMAGE';
         if (file.type.startsWith('video/')) type = 'VIDEO';
         if (file.type.startsWith('audio/')) type = 'AUDIO';
@@ -35,7 +34,7 @@ export function MediaUploader({ mediaList, onChange }: MediaUploaderProps) {
       toast.error('Lỗi khi upload file.');
     } finally {
       setUploading(false);
-      e.target.value = ''; // Reset input
+      e.target.value = '';
     }
   };
 
@@ -52,20 +51,20 @@ export function MediaUploader({ mediaList, onChange }: MediaUploaderProps) {
 
   return (
     <div className="space-y-3">
-      <span className="text-sm font-medium text-slate-700">Hình ảnh / Phương tiện đính kèm</span>
+      <span className="text-xs font-semibold text-stone-300">Hình ảnh / Phương tiện truyền thông đính kèm</span>
 
-      {/* Khu vực Drag & Drop / Input file */}
-      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-stone-300 rounded-lg cursor-pointer bg-stone-50 hover:bg-stone-100 transition-colors">
+      {/* Khu vực Drag & Drop */}
+      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-stone-800 rounded-xl cursor-pointer bg-stone-950/60 hover:bg-stone-900 hover:border-[#A50C1E] transition-all">
         <div className="flex flex-col items-center justify-center pt-5 pb-6">
           {uploading ? (
-            <Loader2 className="w-8 h-8 text-emerald-700 animate-spin" />
+            <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
           ) : (
             <>
-              <Upload className="w-8 h-8 text-stone-400 mb-2" />
-              <p className="text-xs text-slate-600">
-                <span className="font-semibold text-emerald-700">Bấm để tải file lên</span> hoặc kéo thả vào đây
+              <Upload className="w-7 h-7 text-[#A50C1E] mb-2" />
+              <p className="text-xs text-stone-300">
+                <span className="font-bold text-amber-300">Bấm để tải file lên</span> hoặc kéo thả vào đây
               </p>
-              <p className="text-[10px] text-stone-400 mt-1">Hỗ trợ Ảnh, Audio, Video (Tối đa 50MB)</p>
+              <p className="text-[10px] text-stone-500 mt-1">Hỗ trợ Hình ảnh, Audio, Video (Tối đa 50MB)</p>
             </>
           )}
         </div>
@@ -79,41 +78,41 @@ export function MediaUploader({ mediaList, onChange }: MediaUploaderProps) {
         />
       </label>
 
-      {/* Danh sách file đã upload thành công */}
+      {/* Danh sách phương tiện đã upload */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
         {mediaList.map((item, idx) => (
-          <div key={item.cid || idx} className="flex gap-3 p-2 border border-stone-200 rounded-md bg-white relative group">
-            {/* Thumbnail Preview */}
-            <div className="w-16 h-16 rounded bg-stone-100 flex items-center justify-center shrink-0 overflow-hidden">
+          <div key={item.cid || idx} className="flex gap-3 p-2.5 border border-stone-800 rounded-xl bg-stone-950/80 relative group">
+            {/* Khung xem trước */}
+            <div className="w-16 h-16 rounded-lg bg-stone-900 border border-stone-800 flex items-center justify-center shrink-0 overflow-hidden">
               {item.type === 'IMAGE' ? (
                 <img src={item.thumbnailUrl || item.url} alt="" className="w-full h-full object-cover" />
               ) : item.type === 'VIDEO' ? (
-                <Film className="w-6 h-6 text-stone-500" />
+                <Film className="w-6 h-6 text-amber-400" />
               ) : (
-                <Music className="w-6 h-6 text-stone-500" />
+                <Music className="w-6 h-6 text-amber-400" />
               )}
             </div>
 
-            {/* Thông tin file & Caption */}
+            {/* Thông tin & Nhập chú thích */}
             <div className="flex-1 min-w-0 pr-6">
-              <p className="text-xs font-medium text-slate-800 truncate">{item.fileName}</p>
-              <p className="text-[10px] text-emerald-700 font-mono truncate">CID: {item.cid}</p>
+              <p className="text-xs font-semibold text-stone-200 truncate">{item.fileName || 'Tệp phương tiện'}</p>
+              <p className="text-[10px] text-amber-300 font-mono truncate">CID: {item.cid}</p>
               <input
                 type="text"
-                placeholder="Nhập chú thích..."
+                placeholder="Nhập chú thích hiển thị..."
                 value={item.caption || ''}
                 onChange={(e) => handleCaptionChange(idx, e.target.value)}
-                className="mt-1 w-full text-xs border border-stone-200 rounded px-1.5 py-0.5 outline-none focus:border-emerald-700"
+                className="mt-1.5 w-full text-xs border border-stone-800 rounded-lg bg-stone-900 px-2 py-1 text-stone-200 placeholder-stone-500 outline-none focus:border-[#A50C1E]"
               />
             </div>
 
-            {/* Nút xóa */}
+            {/* Nút Xóa */}
             <button
               type="button"
               onClick={() => handleRemove(idx)}
-              className="absolute top-2 right-2 text-stone-400 hover:text-red-500"
+              className="absolute top-2.5 right-2.5 text-stone-500 hover:text-red-400 transition-colors"
             >
-              <X size={16} />
+              <X size={15} />
             </button>
           </div>
         ))}

@@ -13,9 +13,9 @@ import {
 
 export function Footer() {
   return (
-    <footer className="w-full bg-white text-black font-sans  select-none">
+    <footer className="w-full bg-white text-black font-sans  select-none border-t-2 border-gray-400">
       {/* ================= TẦNG TRÊN: NỘI DUNG CHÍNH ================= */}
-      <div className="mx-auto max-w-7xl px-6 py-12 sm:px-12 lg:px-16">
+      <div className="mx-auto max-w-7xl px-6 py-12 sm:px-12 lg:px-16 ">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
 
           {/* CỘT 1: LOGO & GIỚI THIỆU */}
@@ -54,7 +54,7 @@ export function Footer() {
               Hệ thống lưu trữ & thẩm định Di sản Văn hóa Phi vật thể Việt Nam trên nền tảng công nghệ Blockchain, tôn vinh và bảo tồn bản sắc dân tộc.
             </p>
 
-            <div className="pt-2 flex items-center gap-2 text-xs font-bold text-amber-300">
+            <div className="pt-2 flex items-center gap-2 text-xs font-bold text-[#A50C1E]">
               <ShieldCheck size={16} className="text-[#A50C1E]" />
               <span>Thẩm định số bằng Blockchain</span>
             </div>

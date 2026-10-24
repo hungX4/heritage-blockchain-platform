@@ -19,14 +19,12 @@ router.post(
 
 router.get(
   '/',
-  AuthMiddleware.authenticate,
   HeritageVersionController.getVersions
 );
 
 // GET /api/heritage-versions/:id
 router.get(
   '/:id',
-  AuthMiddleware.authenticate,
   HeritageVersionController.getVersionById
 );
 

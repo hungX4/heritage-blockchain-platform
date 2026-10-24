@@ -67,14 +67,14 @@ export function Navbar() {
   return (
     <header className="absolute top-0 left-0 w-full z-50 font-sans select-none flex justify-center pointer-events-none">
       {/* 🟢 KHUNG NAVBAR TRONG SUỐT (GLASSMORPHISM) */}
-      <div className="pointer-events-auto flex w-fit max-w-6xl items-stretch bg-black/10  text-white shadow-2xl  transition-all duration-300">
+      <div className="pointer-events-auto flex w-fit max-w-6xl items-stretch bg-black/10 text-white shadow-2xl transition-all duration-300">
 
-        {/* ================= CỘT 1: LOGO VNFAM (HOVER LÊN MÀU ĐỎ) ================= */}
+        {/* ================= CỘT 1: LOGO VNFAM ================= */}
         <NavLink
           to="/"
-          className="flex items-center gap-3.5  border-white/20 bg-transparent px-6 py-3 transition-colors duration-300 hover:bg-[#A50C1E] shrink-0"
+          className="flex items-center gap-3.5 border-white/20 bg-transparent px-6 py-3 transition-colors duration-300 hover:bg-[#A50C1E] shrink-0"
         >
-          <div className="flex h-12 w-16 items-center justify-center  p-1">
+          <div className="flex h-12 w-16 items-center justify-center p-1">
             <svg
               viewBox="0 0 100 65"
               fill="none"
@@ -103,26 +103,26 @@ export function Navbar() {
           </div>
         </NavLink>
 
-        {/* ================= CỘT 2: CỘT GIỮA CHIA 2 TẦNG ================= */}
-        <div className={`flex flex-col justify-between ${isManagementRole ? ' ' : ''}`}>
+        {/* ================= CỘT 2: CỘT GIỮA MENU ================= */}
+        <div className="flex flex-col justify-between">
 
-          {/* 🟢 TẦNG TRÊN: Ô TÌM KIẾM HOVER ĐỔI MÀU ĐỎ */}
-          <div className="flex items-center justify-center  px-4 h-11 w-full">
+          {/* Ô TÌM KIẾM */}
+          <div className="flex items-center justify-center px-4 h-11 w-full">
             <form onSubmit={handleSearchSubmit} className="w-full relative flex items-center">
               <input
                 type="text"
                 placeholder="Tìm kiếm di sản, sự kiện..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-full bg-white/10  py-1.5 pl-4 pr-10 text-xs text-white placeholder-white/70 hover:bg-[#A50C1E]/70 focus:bg-[#A50C1E] focus:border-amber-300 focus:outline-none transition-all duration-300 shadow-inner"
+                className="w-full rounded-full bg-white/10 py-1.5 pl-4 pr-10 text-xs text-white placeholder-white/70 hover:bg-[#A50C1E]/70 focus:bg-[#A50C1E] focus:border-amber-300 focus:outline-none transition-all duration-300 shadow-inner"
               />
-              <button type="submit" className="absolute right-3.5 text-white/80 hover:text-amber-300 focus:outline-none">
+              <button type="submit" className="absolute right-3.5 text-white/80 hover:text-amber-300 focus:outline-none cursor-pointer">
                 <Search size={16} />
               </button>
             </form>
           </div>
 
-          {/* 🟢 TẦNG DƯỚI: CÁC MỤC MENU HOVER TỪNG CHỖ NỔI MÀU ĐỎ */}
+          {/* MENU CHÍNH */}
           <nav className="flex items-center justify-center gap-2 sm:gap-4 px-3 h-11 font-bold text-xs sm:text-sm tracking-wider uppercase whitespace-nowrap">
             <NavLink
               to="/about"
@@ -167,166 +167,177 @@ export function Navbar() {
 
         </div>
 
-        {/* ================= CỘT 3: CỘT USER (HOVER VÀO LÊN MÀU ĐỎ) ================= */}
-        {isManagementRole && (
-          <div className="flex items-center justify-center px-6 shrink-0 relative transition-colors duration-300 hover:bg-[#A50C1E]" ref={dropdownRef}>
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex h-11 w-11 items-center justify-center rounded-full  bg-white/10 text-white font-bold text-sm shadow-md transition-all hover:scale-105 hover:bg-white/30 hover:border-amber-300 focus:outline-none"
-              title={`${user?.fullName} (${user?.role})`}
-            >
-              {user?.fullName?.charAt(0).toUpperCase() || <User size={18} />}
-            </button>
+        {/* ================= CỘT 3: CỘT KHUNG CỐ ĐỊNH GIỮ NGUYÊN CHIỀU DÀI NAVBAR ================= */}
+        <div
+          className={`flex items-center justify-center px-6 shrink-0 relative transition-colors duration-300 ${user ? 'hover:bg-[#A50C1E]' : ''
+            }`}
+          ref={dropdownRef}
+        >
+          {user && (
+            <>
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white font-bold text-sm shadow-md transition-all hover:scale-105 hover:bg-white/30 hover:border-amber-300 focus:outline-none cursor-pointer"
+                title={`${user?.fullName} (${user?.role})`}
+              >
+                {user?.fullName?.charAt(0).toUpperCase() || <User size={18} />}
+              </button>
 
-            {/* DROPDOWN MENU */}
-            {isDropdownOpen && (
-              <div className="absolute right-2 top-full mt-2 w-72 rounded-xl bg-white text-slate-800 shadow-2xl border border-stone-200 py-2 z-50 animate-in fade-in duration-150">
-                <div className="border-b border-stone-100 px-4 py-3 bg-stone-50">
-                  <p className="text-sm font-bold text-slate-900 truncate">{user?.fullName}</p>
-                  <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-                  <div className="mt-1.5">
-                    <span className="inline-block rounded bg-[#A50C1E]/10 border border-[#A50C1E]/20 px-2 py-0.5 text-[10px] font-bold text-[#A50C1E] uppercase">
-                      Role: {user?.role}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="max-h-[60vh] overflow-y-auto divide-y divide-stone-100 text-sm">
-                  <div className="py-2">
-                    <div className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Hệ thống & Thẩm định
+              {/* DROPDOWN MENU */}
+              {isDropdownOpen && (
+                <div className="absolute right-2 top-full mt-2 w-72 rounded-xl bg-white text-slate-800 shadow-2xl border border-stone-200 py-2 z-50 animate-in fade-in duration-150">
+                  {/* Thông tin người dùng */}
+                  <div className="border-b border-stone-100 px-4 py-3 bg-stone-50">
+                    <p className="text-sm font-bold text-slate-900 truncate">{user?.fullName}</p>
+                    <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                    <div className="mt-1.5">
+                      <span className="inline-block rounded bg-[#A50C1E]/10 border border-[#A50C1E]/20 px-2 py-0.5 text-[10px] font-bold text-[#A50C1E] uppercase">
+                        Role: {user?.role}
+                      </span>
                     </div>
-                    <NavLink
-                      to="/dashboard"
-                      className={({ isActive }) =>
-                        `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
-                        }`
-                      }
-                    >
-                      <LayoutDashboard size={16} />
-                      <span className="hover:underline">Dashboard</span>
-                    </NavLink>
-
-                    <NavLink
-                      to="/verification"
-                      className={({ isActive }) =>
-                        `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
-                        }`
-                      }
-                    >
-                      <CheckCircle2 size={16} />
-                      <span className="hover:underline">Kiểm duyệt</span>
-                    </NavLink>
-
-                    <NavLink
-                      to="/blockchain"
-                      className={({ isActive }) =>
-                        `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
-                        }`
-                      }
-                    >
-                      <Blocks size={16} />
-                      <span className="hover:underline">Sổ cái Blockchain</span>
-                    </NavLink>
                   </div>
 
-                  {isSystemAdmin && (
-                    <div className="py-2 bg-red-50/40">
-                      <div className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-[#A50C1E] flex items-center gap-1">
-                        <FolderCog size={12} /> Quản trị Admin
+                  {/* Tính năng nâng cao CHỈ HIỂN THỊ DÀNH CHO ROLE QUẢN LÝ / CHUYÊN GIA / ADMIN */}
+                  {isManagementRole && (
+                    <div className="max-h-[60vh] overflow-y-auto divide-y divide-stone-100 text-sm">
+                      <div className="py-2">
+                        <div className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Hệ thống & Thẩm định
+                        </div>
+                        <NavLink
+                          to="/dashboard"
+                          className={({ isActive }) =>
+                            `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
+                            }`
+                          }
+                        >
+                          <LayoutDashboard size={16} />
+                          <span className="hover:underline">Dashboard</span>
+                        </NavLink>
+
+                        <NavLink
+                          to="/verification"
+                          className={({ isActive }) =>
+                            `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
+                            }`
+                          }
+                        >
+                          <CheckCircle2 size={16} />
+                          <span className="hover:underline">Kiểm duyệt</span>
+                        </NavLink>
+
+                        <NavLink
+                          to="/blockchain"
+                          className={({ isActive }) =>
+                            `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
+                            }`
+                          }
+                        >
+                          <Blocks size={16} />
+                          <span className="hover:underline">Sổ cái Blockchain</span>
+                        </NavLink>
                       </div>
 
-                      <NavLink
-                        to="/master-data/users"
-                        className={({ isActive }) =>
-                          `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-100/60 font-bold text-[#A50C1E]' : 'text-slate-700'
-                          }`
-                        }
-                      >
-                        <Users size={16} />
-                        <span className="hover:underline">Người dùng & Chuyên gia</span>
-                      </NavLink>
+                      {isSystemAdmin && (
+                        <div className="py-2 bg-red-50/40">
+                          <div className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-[#A50C1E] flex items-center gap-1">
+                            <FolderCog size={12} /> Quản trị Admin
+                          </div>
 
-                      <NavLink
-                        to="/master-data/heritage-fields"
-                        className={({ isActive }) =>
-                          `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-100/60 font-bold text-[#A50C1E]' : 'text-slate-700'
-                          }`
-                        }
-                      >
-                        <Layers size={16} />
-                        <span className="hover:underline">Loại hình di sản</span>
-                      </NavLink>
+                          <NavLink
+                            to="/master-data/users"
+                            className={({ isActive }) =>
+                              `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-100/60 font-bold text-[#A50C1E]' : 'text-slate-700'
+                              }`
+                            }
+                          >
+                            <Users size={16} />
+                            <span className="hover:underline">Người dùng & Chuyên gia</span>
+                          </NavLink>
 
-                      <NavLink
-                        to="/master-data/specializations"
-                        className={({ isActive }) =>
-                          `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-100/60 font-bold text-[#A50C1E]' : 'text-slate-700'
-                          }`
-                        }
-                      >
-                        <Award size={16} />
-                        <span className="hover:underline">Lĩnh vực chuyên môn</span>
-                      </NavLink>
+                          <NavLink
+                            to="/master-data/heritage-fields"
+                            className={({ isActive }) =>
+                              `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-100/60 font-bold text-[#A50C1E]' : 'text-slate-700'
+                              }`
+                            }
+                          >
+                            <Layers size={16} />
+                            <span className="hover:underline">Loại hình di sản</span>
+                          </NavLink>
+
+                          <NavLink
+                            to="/master-data/specializations"
+                            className={({ isActive }) =>
+                              `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-100/60 font-bold text-[#A50C1E]' : 'text-slate-700'
+                              }`
+                            }
+                          >
+                            <Award size={16} />
+                            <span className="hover:underline">Lĩnh vực chuyên môn</span>
+                          </NavLink>
+                        </div>
+                      )}
+
+                      <div className="py-2">
+                        <div className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Tổ chức & Đơn vị
+                        </div>
+
+                        <NavLink
+                          to="/organization/list"
+                          className={({ isActive }) =>
+                            `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
+                            }`
+                          }
+                        >
+                          <Building2 size={16} />
+                          <span className="hover:underline">Danh sách tổ chức</span>
+                        </NavLink>
+
+                        {isSystemAdmin && (
+                          <NavLink
+                            to="/organization/pending"
+                            className={({ isActive }) =>
+                              `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
+                              }`
+                            }
+                          >
+                            <CheckSquare size={16} />
+                            <span className="hover:underline">Duyệt yêu cầu tổ chức</span>
+                          </NavLink>
+                        )}
+
+                        <NavLink
+                          to="/organization/request"
+                          className={({ isActive }) =>
+                            `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
+                            }`
+                          }
+                        >
+                          <FilePlus size={16} />
+                          <span className="hover:underline">Đăng ký tổ chức mới</span>
+                        </NavLink>
+                      </div>
                     </div>
                   )}
 
-                  <div className="py-2">
-                    <div className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Tổ chức & Đơn vị
-                    </div>
-
-                    <NavLink
-                      to="/organization/list"
-                      className={({ isActive }) =>
-                        `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
-                        }`
-                      }
+                  {/* NÚT ĐĂNG XUẤT TÀI KHOẢN */}
+                  <div className="p-2 border-t border-stone-100 bg-stone-50">
+                    <button
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 hover:underline disabled:opacity-50 cursor-pointer"
                     >
-                      <Building2 size={16} />
-                      <span className="hover:underline">Danh sách tổ chức</span>
-                    </NavLink>
-
-                    {isSystemAdmin && (
-                      <NavLink
-                        to="/organization/pending"
-                        className={({ isActive }) =>
-                          `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
-                          }`
-                        }
-                      >
-                        <CheckSquare size={16} />
-                        <span className="hover:underline">Duyệt yêu cầu tổ chức</span>
-                      </NavLink>
-                    )}
-
-                    <NavLink
-                      to="/organization/request"
-                      className={({ isActive }) =>
-                        `flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-stone-100 hover:text-[#A50C1E] ${isActive ? 'bg-red-50 font-bold text-[#A50C1E]' : 'text-slate-700'
-                        }`
-                      }
-                    >
-                      <FilePlus size={16} />
-                      <span className="hover:underline">Đăng ký tổ chức mới</span>
-                    </NavLink>
+                      <LogOut size={15} />
+                      <span>{isLoggingOut ? 'Đang xử lý...' : 'Đăng xuất tài khoản'}</span>
+                    </button>
                   </div>
                 </div>
-
-                <div className="p-2 border-t border-stone-100 bg-stone-50">
-                  <button
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 hover:underline disabled:opacity-50"
-                  >
-                    <LogOut size={15} />
-                    <span>{isLoggingOut ? 'Đang xử lý...' : 'Đăng xuất tài khoản'}</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </>
+          )}
+        </div>
 
       </div>
     </header>

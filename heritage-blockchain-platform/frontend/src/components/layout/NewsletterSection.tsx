@@ -46,25 +46,26 @@ export function NewsletterSection() {
   };
 
   return (
-    <section className="w-full bg-black text-white font-sans border-t border-stone-800/80 py-14 px-4 sm:px-6 lg:px-8 select-none">
+    <section className="w-full bg-gradient-to-b from-black via-pink-500/30 to-black text-white font-sans  py-24 px-4 sm:px-6 lg:px-8 select-none">
+
       <div className="max-w-4xl mx-auto space-y-10 text-center">
 
         {/* ================= TIÊU ĐỀ ================= */}
         <div className="space-y-2">
           <h2
-            className="text-3xl sm:text-4xl font-bold tracking-tight text-white"
+            className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-200"
             style={{ fontFamily: "'Merriweather', Georgia, serif" }}
           >
             Nhận bản tin
           </h2>
-          <p className="text-xs sm:text-sm text-stone-400 font-sans max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-stone-200 font-sans max-w-lg mx-auto">
             Đăng ký để cập nhật thông tin tư liệu, sự kiện và di sản văn hóa mới nhất.
           </p>
         </div>
 
         {/* ================= FORM ĐĂNG KÝ ================= */}
         <form onSubmit={handleSubmit} className="max-w-xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-stretch border border-stone-700 bg-stone-950 rounded-xl overflow-hidden focus-within:border-[#A50C1E] transition-all shadow-xl">
+          <div className="flex flex-col sm:flex-row items-stretch  bg-white rounded-xl overflow-hidden focus-within:border-[#A50C1E] transition-all shadow-xl">
             <div className="relative flex-1 flex items-center">
               <Mail className="absolute left-4 text-stone-500 shrink-0 pointer-events-none" size={18} />
               <input
@@ -88,8 +89,8 @@ export function NewsletterSection() {
         </form>
 
         {/* ================= HÀNG MẠNG XÃ HỘI ================= */}
-        <div className="pt-4 border-t border-stone-800/60 max-w-2xl mx-auto">
-          <div className="flex items-center justify-center gap-8 text-stone-400">
+        <div className="">
+          <div className="flex items-center justify-center gap-8 text-stone-200">
             <a
               href="https://facebook.com"
               target="_blank"

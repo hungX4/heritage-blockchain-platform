@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, UserCheck, ShieldAlert, Award, X, Check, RefreshCw, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { Search, UserCheck, ShieldAlert, Award, X, Check, RefreshCw, ChevronLeft, ChevronRight, Eye, Users } from 'lucide-react';
 import { userAndExpertApi, User, Specialization, PaginationMeta } from '../../api/userAndExpert.api';
 
 export function UserManagementPage() {
@@ -8,7 +8,7 @@ export function UserManagementPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
 
-  // 🟢 State quản lý Phân trang
+  // State quản lý Phân trang
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationMeta>({
     total: 0,
@@ -78,7 +78,7 @@ export function UserManagementPage() {
     fetchUsers(1);
   };
 
-  // 🟢 Mở Modal & Tải chuyên môn CŨ nếu đã là Expert
+  // Mở Modal & Tải chuyên môn CŨ nếu đã là Expert
   const openAssignModal = async (user: User) => {
     setSelectedUser(user);
     const isExpert = user.role === 'INDEPENDENT_EXPERT' || user.role === 'ORG_EXPERT';
@@ -86,10 +86,8 @@ export function UserManagementPage() {
     if (isExpert) {
       try {
         setLoadingModal(true);
-        // Gọi API lấy hồ sơ chuyên gia hiện tại
         const res = await userAndExpertApi.getExpertByUserId(user.id);
         if (res.data.success && res.data.data) {
-          // Trích xuất danh sách ID chuyên môn đã có
           const currentSpecIds = res.data.data.specializationMappings?.map(
             (m: any) => m.specializationId
           ) || [];
@@ -131,7 +129,7 @@ export function UserManagementPage() {
       });
       alert('Cập nhật quyền Chuyên gia thành công!');
       setSelectedUser(null);
-      fetchUsers(page); // Reload lại danh sách ở trang hiện tại
+      fetchUsers(page);
     } catch (error: any) {
       alert(error.response?.data?.message || 'Có lỗi xảy ra!');
     } finally {
@@ -139,7 +137,7 @@ export function UserManagementPage() {
     }
   };
 
-  // Cắt chức Expert
+  // Thu hồi quyền Expert
   const handleRevokeExpert = async (user: User) => {
     if (!window.confirm(`Bạn có chắc muốn thu hồi quyền Chuyên gia của ${user.fullName}?`)) return;
 
@@ -156,212 +154,321 @@ export function UserManagementPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">Quản lý người dùng & Phân quyền</h1>
-          <p className="text-sm text-slate-500">Xem danh sách, tìm kiếm và phân quyền Chuyên gia thẩm định</p>
+    <div className="min-h-screen bg-[#fbfbf9] font-sans text-slate-800 pb-16">
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[88px] w-[870px] left-1/2 -translate-x-1/2 bg-[#A50C1E]" />
+      {/* ================= PHẦN ĐẦU TRANG: KHỐI ĐỎ CỜ DI SẢN ================= */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-black pt-32  leading-tight"
+              style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+            >
+              Quản Lý Người Dùng & Phân Quyền
+            </h1>
+            <p className="mt-2 text-xs sm:text-sm text-white/80 leading-relaxed max-w-2xl">
+              Tra cứu danh sách thành viên, xem thông tin chi tiết và bổ nhiệm Hội đồng Chuyên gia thẩm định di sản.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= THÂN TRANG (BACKGROUND CANVAS TRẮNG) ================= */}
+      <div className="mx-auto -mt-6 max-w-6xl space-y-5 px-4 sm:px-6 lg:px-8">
+
+        {/* Thanh Tìm Kiếm Đen Trắng */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-white p-4 rounded-xl border border-stone-200 shadow-xs">
+          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative w-full sm:w-80">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                type="text"
+                placeholder="Tìm theo tên, email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-full border border-stone-300 bg-white pl-9 pr-4 py-2 text-xs text-slate-800 placeholder-stone-400 outline-none focus:border-black transition-colors"
+              />
+            </div>
+            <button
+              type="submit"
+              className="rounded-full bg-black px-5 py-2 text-xs font-bold text-white hover:bg-stone-800 transition-colors cursor-pointer shrink-0"
+            >
+              Tìm kiếm
+            </button>
+          </form>
+
+          <p className="text-xs text-slate-500 font-medium">
+            Tổng cộng: <strong className="text-slate-900">{pagination.total}</strong> người dùng
+          </p>
         </div>
 
-        {/* Thanh tìm kiếm */}
-        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
-          <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Tìm theo tên, email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-64 rounded-lg border border-stone-200 pl-9 pr-4 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-            />
-          </div>
-          <button
-            type="submit"
-            className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
-          >
-            Tìm
-          </button>
-        </form>
-      </div>
-
-      {/* Bảng Danh sách Người dùng */}
-      <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
-        <table className="w-full text-left text-sm text-slate-600">
-          <thead className="border-b border-stone-200 bg-stone-50 text-xs uppercase text-slate-500">
-            <tr>
-              <th className="px-6 py-3">Họ và tên</th>
-              <th className="px-6 py-3">Email</th>
-              <th className="px-6 py-3">Tổ chức</th>
-              <th className="px-6 py-3">Vai trò (Role)</th>
-              <th className="px-6 py-3 text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-stone-200">
-            {loading ? (
+        {/* Bảng Danh sách Người dùng */}
+        <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-xs">
+          <table className="w-full text-left text-xs text-slate-700">
+            <thead className="border-b border-stone-200 bg-stone-100 text-[11px] font-bold uppercase text-slate-800">
               <tr>
-                <td colSpan={5} className="py-8 text-center text-slate-400">
-                  <RefreshCw className="mx-auto animate-spin" size={24} />
-                  <p className="mt-2">Đang tải dữ liệu...</p>
-                </td>
+                <th className="px-6 py-3.5">Họ và tên</th>
+                <th className="px-6 py-3.5">Email</th>
+                <th className="px-6 py-3.5">Tổ chức</th>
+                <th className="px-6 py-3.5">Vai trò (Role)</th>
+                <th className="px-6 py-3.5 text-right">Thao tác</th>
               </tr>
-            ) : users.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="py-8 text-center text-slate-400">
-                  Không tìm thấy người dùng phù hợp.
-                </td>
-              </tr>
-            ) : (
-              users.map((user) => {
-                const isExpert = user.role === 'INDEPENDENT_EXPERT' || user.role === 'ORG_EXPERT';
-                return (
-                  <tr key={user.id} className="hover:bg-stone-50">
-                    <td className="px-6 py-4 font-medium text-slate-900">{user.fullName}</td>
-                    <td className="px-6 py-4">{user.email}</td>
-                    <td className="px-6 py-4">{user.organization?.name || '—'}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${isExpert
-                          ? 'bg-purple-100 text-purple-800'
-                          : user.role.includes('ADMIN')
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-stone-100 text-slate-600'
-                          }`}
-                      >
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                      <button
-                        onClick={() => openUserDetail(user)}
-                        className="inline-flex items-center gap-1 rounded bg-stone-100 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-stone-200"
-                      >
-                        <Eye size={14} /> Chi tiết
-                      </button>
-                      <button
-                        onClick={() => openAssignModal(user)}
-                        className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
-                      >
-                        <UserCheck size={14} />
-                        {isExpert ? 'Sửa chuyên môn' : 'Gán Expert'}
-                      </button>
+            </thead>
+            <tbody className="divide-y divide-stone-200 bg-white">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-slate-400">
+                    <RefreshCw className="mx-auto animate-spin mb-2" size={20} />
+                    <p className="text-xs">Đang tải dữ liệu người dùng...</p>
+                  </td>
+                </tr>
+              ) : users.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-slate-400 text-xs">
+                    Không tìm thấy người dùng phù hợp.
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => {
+                  const isExpert = user.role === 'INDEPENDENT_EXPERT' || user.role === 'ORG_EXPERT';
+                  const isAdmin = user.role.includes('ADMIN');
 
-                      {isExpert && (
-                        <button
-                          onClick={() => handleRevokeExpert(user)}
-                          className="inline-flex items-center gap-1 rounded bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100"
+                  return (
+                    <tr key={user.id} className="hover:bg-stone-50/80 transition-colors">
+                      <td
+                        className="px-6 py-4 font-bold text-slate-900 text-sm"
+                        style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+                      >
+                        {user.fullName}
+                      </td>
+                      <td className="px-6 py-4 font-mono text-slate-600">{user.email}</td>
+                      <td className="px-6 py-4 font-medium text-slate-700">{user.organization?.name || '—'}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-bold font-mono uppercase border ${isExpert
+                            ? 'bg-slate-900 text-white border-slate-900'
+                            : isAdmin
+                              ? 'bg-[#A50C1E] text-white border-[#A50C1E]'
+                              : 'bg-stone-100 text-slate-700 border-stone-200'
+                            }`}
                         >
-                          <ShieldAlert size={14} />
-                          Cắt chức
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => openUserDetail(user)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-stone-100 transition-colors cursor-pointer"
+                        >
+                          <Eye size={13} /> Chi tiết
                         </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
 
-        {/* 🟢 THANH PHÂN TRANG (PAGINATION) */}
-        {!loading && pagination.totalPages > 0 && (
-          <div className="flex items-center justify-between border-t border-stone-200 bg-stone-50 px-6 py-3">
-            <span className="text-xs text-slate-500">
-              Hiển thị {users.length} trên tổng số <strong>{pagination.total}</strong> người dùng
-            </span>
+                        <button
+                          type="button"
+                          onClick={() => openAssignModal(user)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-stone-800 transition-colors cursor-pointer"
+                        >
+                          <UserCheck size={13} />
+                          {isExpert ? 'Sửa chuyên môn' : 'Gán Expert'}
+                        </button>
 
-            <div className="flex items-center gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                className="flex items-center gap-1 rounded border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-stone-100 disabled:opacity-50"
-              >
-                <ChevronLeft size={14} /> Trang trước
-              </button>
+                        {isExpert && (
+                          <button
+                            type="button"
+                            onClick={() => handleRevokeExpert(user)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-stone-300 bg-stone-100 px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-stone-200 transition-colors cursor-pointer"
+                          >
+                            <ShieldAlert size={13} />
+                            Thu hồi
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
 
-              <span className="text-xs font-semibold text-slate-700 px-2">
-                Trang {pagination.page} / {pagination.totalPages}
+          {/* THANH PHÂN TRANG (PAGINATION) */}
+          {!loading && pagination.totalPages > 0 && (
+            <div className="flex items-center justify-between border-t border-stone-200 bg-stone-50 px-6 py-3">
+              <span className="text-xs text-slate-500">
+                Hiển thị <strong className="text-slate-900">{users.length}</strong> trên <strong className="text-slate-900">{pagination.total}</strong> người dùng
               </span>
 
-              <button
-                disabled={page >= pagination.totalPages}
-                onClick={() => setPage((prev) => Math.min(prev + 1, pagination.totalPages))}
-                className="flex items-center gap-1 rounded border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-stone-100 disabled:opacity-50"
-              >
-                Trang sau <ChevronRight size={14} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={page <= 1}
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  className="flex items-center gap-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-stone-100 disabled:opacity-50 transition-colors cursor-pointer"
+                >
+                  <ChevronLeft size={14} /> Trước
+                </button>
+
+                <span className="text-xs font-bold text-slate-800 px-2 font-mono">
+                  {pagination.page} / {pagination.totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  disabled={page >= pagination.totalPages}
+                  onClick={() => setPage((prev) => Math.min(prev + 1, pagination.totalPages))}
+                  className="flex items-center gap-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-stone-100 disabled:opacity-50 transition-colors cursor-pointer"
+                >
+                  Sau <ChevronRight size={14} />
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
       </div>
 
+      {/* MODAL CHI TIẾT NGƯỜI DÙNG */}
       {loadingDetail && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
-          <div className="rounded-lg bg-white px-6 py-4 text-sm text-slate-600">Đang tải thông tin người dùng...</div>
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="rounded-xl bg-white px-6 py-4 text-xs font-bold text-slate-800 shadow-xl border border-stone-200">
+            Đang tải thông tin chi tiết...
+          </div>
         </div>
       )}
 
       {detailUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setDetailUser(null)}>
-          <section className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl" onClick={(event) => event.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setDetailUser(null)}
+        >
+          <section
+            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-stone-200 text-slate-800"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-stone-200 pb-3">
-              <h2 className="text-lg font-semibold text-slate-900">Chi tiết người dùng</h2>
-              <button aria-label="Đóng" onClick={() => setDetailUser(null)} className="text-slate-400 hover:text-slate-700"><X size={20} /></button>
+              <h2
+                className="text-base font-bold text-slate-900"
+                style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+              >
+                Chi Tiết Tài Khoản Người Dùng
+              </h2>
+              <button
+                type="button"
+                aria-label="Đóng"
+                onClick={() => setDetailUser(null)}
+                className="p-1 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-slate-800 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
             </div>
-            <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-              <div><dt className="text-xs text-slate-500">Họ và tên</dt><dd className="mt-1 font-medium text-slate-900">{detailUser.fullName}</dd></div>
-              <div><dt className="text-xs text-slate-500">Vai trò</dt><dd className="mt-1 font-medium text-slate-900">{detailUser.role}</dd></div>
-              <div><dt className="text-xs text-slate-500">Email</dt><dd className="mt-1 break-all text-slate-800">{detailUser.email}</dd></div>
-              <div><dt className="text-xs text-slate-500">Tổ chức</dt><dd className="mt-1 text-slate-800">{detailUser.organization?.name || 'Chưa thuộc tổ chức'}</dd></div>
-              <div><dt className="text-xs text-slate-500">Ngày tạo tài khoản</dt><dd className="mt-1 text-slate-800">{detailUser.createdAt ? new Date(detailUser.createdAt).toLocaleString('vi-VN') : '—'}</dd></div>
-              <div><dt className="text-xs text-slate-500">Mã người dùng</dt><dd className="mt-1 break-all font-mono text-xs text-slate-700">{detailUser.id}</dd></div>
+
+            <dl className="mt-4 grid grid-cols-1 gap-4 text-xs sm:grid-cols-2">
+              <div>
+                <dt className="text-[11px] font-bold text-slate-400 uppercase">Họ và tên</dt>
+                <dd
+                  className="mt-1 font-bold text-slate-900 text-sm"
+                  style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+                >
+                  {detailUser.fullName}
+                </dd>
+              </div>
+
+              <div>
+                <dt className="text-[11px] font-bold text-slate-400 uppercase">Vai trò (Role)</dt>
+                <dd className="mt-1 font-mono font-bold text-slate-900">{detailUser.role}</dd>
+              </div>
+
+              <div>
+                <dt className="text-[11px] font-bold text-slate-400 uppercase">Email</dt>
+                <dd className="mt-1 break-all font-mono text-slate-800">{detailUser.email}</dd>
+              </div>
+
+              <div>
+                <dt className="text-[11px] font-bold text-slate-400 uppercase">Tổ chức</dt>
+                <dd className="mt-1 font-semibold text-slate-800">{detailUser.organization?.name || 'Chưa thuộc tổ chức'}</dd>
+              </div>
+
+              <div>
+                <dt className="text-[11px] font-bold text-slate-400 uppercase">Ngày tạo tài khoản</dt>
+                <dd className="mt-1 text-slate-700">{detailUser.createdAt ? new Date(detailUser.createdAt).toLocaleString('vi-VN') : '—'}</dd>
+              </div>
+
+              <div>
+                <dt className="text-[11px] font-bold text-slate-400 uppercase">Mã người dùng (ID)</dt>
+                <dd className="mt-1 break-all font-mono text-[11px] text-slate-600">{detailUser.id}</dd>
+              </div>
             </dl>
+
+            <div className="mt-6 flex justify-end border-t border-stone-200 pt-4">
+              <button
+                type="button"
+                onClick={() => setDetailUser(null)}
+                className="rounded-lg bg-black px-5 py-2 text-xs font-bold text-white hover:bg-stone-800 transition-colors cursor-pointer"
+              >
+                Đóng
+              </button>
+            </div>
           </section>
         </div>
       )}
 
       {/* MODAL PHÂN QUYỀN EXPERT */}
       {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-stone-200 text-slate-800">
             <div className="flex items-center justify-between border-b border-stone-200 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">
-                Phân quyền Chuyên gia: <span className="text-emerald-700">{selectedUser.fullName}</span>
+              <h3
+                className="text-base font-bold text-slate-900"
+                style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+              >
+                Bổ Nhiệm Chuyên Gia Thẩm Định
               </h3>
-              <button onClick={() => setSelectedUser(null)} className="text-slate-400 hover:text-slate-600">
-                <X size={20} />
+              <button
+                type="button"
+                onClick={() => setSelectedUser(null)}
+                className="p-1 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-slate-800 cursor-pointer"
+              >
+                <X size={18} />
               </button>
             </div>
 
-            <div className="mt-4">
-              <p className="mb-2 text-xs font-semibold text-slate-500 uppercase">
-                Chọn lĩnh vực chuyên môn phụ trách:
+            <div className="mt-4 space-y-3">
+              <p className="text-xs text-slate-600">
+                Thành viên: <strong className="text-slate-900">{selectedUser.fullName}</strong> ({selectedUser.email})
+              </p>
+
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Chọn các lĩnh vực chuyên môn phụ trách:
               </p>
 
               {loadingModal ? (
                 <div className="py-8 text-center text-slate-400">
-                  <RefreshCw className="mx-auto animate-spin" size={20} />
-                  <p className="mt-1 text-xs">Đang tải thông tin chuyên môn cũ...</p>
+                  <RefreshCw className="mx-auto animate-spin mb-1" size={18} />
+                  <p className="text-xs">Đang tải danh mục chuyên môn...</p>
                 </div>
               ) : (
-                <div className="max-h-60 overflow-y-auto space-y-2 border border-stone-200 rounded-lg p-3">
+                <div className="max-h-60 overflow-y-auto space-y-2 border border-stone-200 rounded-xl p-3 bg-stone-50">
                   {specializations.map((spec) => {
                     const isChecked = selectedSpecIds.includes(spec.id);
                     return (
                       <label
                         key={spec.id}
-                        className={`flex items-center justify-between rounded-md p-2 text-sm cursor-pointer border ${isChecked ? 'border-emerald-500 bg-emerald-50/50' : 'border-stone-100 hover:bg-stone-50'
+                        className={`flex items-center justify-between rounded-lg p-2.5 text-xs cursor-pointer border transition-all ${isChecked
+                          ? 'border-black bg-white shadow-xs font-bold'
+                          : 'border-stone-200 bg-white hover:bg-stone-100/80 text-slate-700'
                           }`}
                       >
                         <div className="flex items-center gap-2">
-                          <Award size={16} className={isChecked ? 'text-emerald-600' : 'text-slate-400'} />
-                          <span className="font-medium text-slate-700">{spec.name}</span>
-                          <span className="text-xs text-slate-400">({spec.code})</span>
+                          <Award size={15} className={isChecked ? 'text-black' : 'text-stone-400'} />
+                          <span className="font-semibold text-slate-800">{spec.name}</span>
+                          <span className="font-mono text-[10px] text-stone-400">({spec.code})</span>
                         </div>
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleSpecialization(spec.id)}
-                          className="h-4 w-4 rounded border-stone-300 text-emerald-600 focus:ring-emerald-500"
+                          className="h-4 w-4 rounded border-stone-300 text-black focus:ring-black cursor-pointer"
                         />
                       </label>
                     );
@@ -372,18 +479,20 @@ export function UserManagementPage() {
 
             <div className="mt-6 flex justify-end gap-3 border-t border-stone-200 pt-4">
               <button
+                type="button"
                 onClick={() => setSelectedUser(null)}
-                className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-stone-50"
+                className="rounded-lg border border-stone-300 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-stone-100 transition-colors cursor-pointer"
               >
-                Hủy
+                Hủy bỏ
               </button>
               <button
+                type="button"
                 onClick={handleAssignExpert}
                 disabled={isSubmitting || loadingModal}
-                className="flex items-center gap-1.5 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg bg-black px-4 py-2 text-xs font-bold text-white hover:bg-stone-800 disabled:opacity-50 transition-colors cursor-pointer shadow-xs"
               >
-                <Check size={16} />
-                {isSubmitting ? 'Đang lưu...' : 'Xác nhận Bổ nhiệm'}
+                <Check size={15} />
+                <span>{isSubmitting ? 'Đang lưu...' : 'Xác nhận Bổ nhiệm'}</span>
               </button>
             </div>
           </div>

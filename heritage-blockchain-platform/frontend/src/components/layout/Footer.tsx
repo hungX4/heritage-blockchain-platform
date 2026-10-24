@@ -13,7 +13,7 @@ import {
 
 export function Footer() {
   return (
-    <footer className="w-full bg-[#120204] text-stone-300 font-sans border-t-4 border-[#A50C1E] select-none">
+    <footer className="w-full bg-white text-black font-sans  select-none">
       {/* ================= TẦNG TRÊN: NỘI DUNG CHÍNH ================= */}
       <div className="mx-auto max-w-7xl px-6 py-12 sm:px-12 lg:px-16">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
@@ -40,11 +40,11 @@ export function Footer() {
                 </svg>
               </div>
 
-              <div className="flex flex-col font-serif leading-none text-white">
+              <div className="flex flex-col font-serif leading-none text-black">
                 <span className="text-lg font-black tracking-widest border-b border-amber-500/40 pb-0.5">
                   VIET NAM
                 </span>
-                <span className="text-[10px] font-bold tracking-widest pt-1 uppercase text-amber-300">
+                <span className="text-[10px] font-bold tracking-widest pt-1 uppercase text-black">
                   HERITAGE
                 </span>
               </div>
@@ -63,7 +63,7 @@ export function Footer() {
           {/* CỘT 2: LIÊN KẾT NHANH */}
           <div className="space-y-3">
             <h4
-              className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-2 inline-block"
+              className="text-sm font-bold uppercase tracking-wider text-black border-b border-white/10 pb-2 inline-block"
               style={{ fontFamily: "'Merriweather', Georgia, serif" }}
             >
               Điều hướng
@@ -71,31 +71,31 @@ export function Footer() {
 
             <ul className="space-y-2 text-xs">
               <li>
-                <Link to="/about" className="flex items-center gap-1.5 transition-colors hover:text-amber-300 hover:translate-x-1 duration-200">
+                <Link to="/about" className="flex items-center gap-1.5 transition-colors hover:text-[#A50C1E] hover:translate-x-1 duration-200">
                   <ChevronRight size={13} className="text-[#A50C1E]" />
                   <span>Giới thiệu nền tảng</span>
                 </Link>
               </li>
               <li>
-                <Link to="/heritage/list" className="flex items-center gap-1.5 transition-colors hover:text-amber-300 hover:translate-x-1 duration-200">
+                <Link to="/heritage/list" className="flex items-center gap-1.5 transition-colors hover:text-[#A50C1E] hover:translate-x-1 duration-200">
                   <ChevronRight size={13} className="text-[#A50C1E]" />
                   <span>Danh mục Di sản</span>
                 </Link>
               </li>
               <li>
-                <Link to="/events" className="flex items-center gap-1.5 transition-colors hover:text-amber-300 hover:translate-x-1 duration-200">
+                <Link to="/events" className="flex items-center gap-1.5 transition-colors hover:text-[#A50C1E] hover:translate-x-1 duration-200">
                   <ChevronRight size={13} className="text-[#A50C1E]" />
                   <span>Sự kiện văn hóa</span>
                 </Link>
               </li>
               <li>
-                <Link to="/heritage/create" className="flex items-center gap-1.5 transition-colors hover:text-amber-300 hover:translate-x-1 duration-200">
+                <Link to="/heritage/create" className="flex items-center gap-1.5 transition-colors hover:text-[#A50C1E] hover:translate-x-1 duration-200">
                   <ChevronRight size={13} className="text-[#A50C1E]" />
                   <span>Lập hồ sơ Di sản</span>
                 </Link>
               </li>
               <li>
-                <Link to="/organization/request" className="flex items-center gap-1.5 transition-colors hover:text-amber-300 hover:translate-x-1 duration-200">
+                <Link to="/organization/request" className="flex items-center gap-1.5 transition-colors hover:text-[#A50C1E] hover:translate-x-1 duration-200">
                   <ChevronRight size={13} className="text-[#A50C1E]" />
                   <span>Đăng ký Đơn vị / Tổ chức</span>
                 </Link>
@@ -106,31 +106,31 @@ export function Footer() {
           {/* CỘT 3: DI SẢN TIÊU BIỂU */}
           <div className="space-y-3">
             <h4
-              className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-2 inline-block"
+              className="text-sm font-bold uppercase tracking-wider text-black border-b border-white/10 pb-2 inline-block"
               style={{ fontFamily: "'Merriweather', Georgia, serif" }}
             >
               Di sản Tiêu biểu
             </h4>
 
             <ul className="space-y-2 text-xs">
-              <li className="flex items-center gap-2 text-stone-300">
-                <Award size={13} className="text-amber-400 shrink-0" />
+              <li className="flex items-center gap-2 text-black">
+                <Award size={13} className="text-black shrink-0" />
                 <span className="truncate">Nhã Nhạc Cung Đình Huế</span>
               </li>
-              <li className="flex items-center gap-2 text-stone-300">
-                <Award size={13} className="text-amber-400 shrink-0" />
+              <li className="flex items-center gap-2 text-black">
+                <Award size={13} className="text-black shrink-0" />
                 <span className="truncate">Cồng Chiêng Tây Nguyên</span>
               </li>
-              <li className="flex items-center gap-2 text-stone-300">
-                <Award size={13} className="text-amber-400 shrink-0" />
+              <li className="flex items-center gap-2 text-black">
+                <Award size={13} className="text-black shrink-0" />
                 <span className="truncate">Dân Ca Quan Họ Bắc Ninh</span>
               </li>
-              <li className="flex items-center gap-2 text-stone-300">
-                <Award size={13} className="text-amber-400 shrink-0" />
+              <li className="flex items-center gap-2 text-black">
+                <Award size={13} className="text-black shrink-0" />
                 <span className="truncate">Đờn Ca Tài Tử Nam Bộ</span>
               </li>
-              <li className="flex items-center gap-2 text-stone-300">
-                <Award size={13} className="text-amber-400 shrink-0" />
+              <li className="flex items-center gap-2 text-black">
+                <Award size={13} className="text-black shrink-0" />
                 <span className="truncate">Hát Xoan Phú Thọ</span>
               </li>
             </ul>
@@ -139,13 +139,13 @@ export function Footer() {
           {/* CỘT 4: THÔNG TIN LIÊN HỆ */}
           <div className="space-y-3">
             <h4
-              className="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-2 inline-block"
+              className="text-sm font-bold uppercase tracking-wider text-black border-b border-white/10 pb-2 inline-block"
               style={{ fontFamily: "'Merriweather', Georgia, serif" }}
             >
               Thông tin Liên hệ
             </h4>
 
-            <div className="space-y-2.5 text-xs text-stone-300">
+            <div className="space-y-2.5 text-xs text-black">
               <div className="flex items-start gap-2.5">
                 <MapPin size={15} className="text-[#A50C1E] mt-0.5 shrink-0" />
                 <span>Số 66 Nguyễn Thái Học, Ba Đình, Hà Nội</span>
@@ -159,8 +159,8 @@ export function Footer() {
                 <span>contact@vietnamheritage.gov.vn</span>
               </div>
               <div className="flex items-center gap-2.5 pt-1">
-                <Blocks size={15} className="text-amber-400 shrink-0" />
-                <span className="text-[11px] text-stone-400">Node Sổ cái: #0x8F...A92</span>
+                <Blocks size={15} className="text-[#A50C1E] shrink-0" />
+                <span className="text-[11px] text-black">Node Sổ cái: #0x8F...A92</span>
               </div>
             </div>
           </div>
@@ -169,8 +169,8 @@ export function Footer() {
       </div>
 
       {/* ================= TẦNG DƯỚI: BẢO QUYỀN & CHÍNH SÁCH ================= */}
-      <div className="bg-black/60 border-t border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-[11px] text-stone-400 sm:flex-row">
+      <div className="bg-white border-t border-white/10 px-6 py-4">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-[11px] text-black sm:flex-row">
           <p>© {new Date().getFullYear()} VIET NAM HERITAGE. Tất cả quyền được bảo lưu.</p>
 
           <div className="flex items-center gap-4">

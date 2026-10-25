@@ -10,16 +10,19 @@ declare global {
     }
   }
 }
-
+const isProd = process.env.NODE_ENV === 'production';
 const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
-  secure: false, //true ở productions
-  sameSite: 'strict',
+  secure: isProd,
+  sameSite: isProd ? 'none' : 'lax',
   path: '/api/auth/refresh',
   maxAge: 30 * 24 * 3600 * 1000,
 }
 
-const CLEAR_COOKIE_OPTIONS = {
+const CLEAR_COOKIE_OPTIONS: CookieOptions = {
+  httpOnly: true,
+  secure: isProd,
+  sameSite: isProd ? 'none' : 'lax',
   path: '/api/auth/refresh',
 }
 export class AuthController {

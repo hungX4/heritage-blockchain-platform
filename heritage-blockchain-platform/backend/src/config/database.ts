@@ -3,16 +3,16 @@ import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DataSource } from 'typeorm';
-// import { User } from '../models/user.model.js';
-// import { Organization } from '../models/organization.model.js';
-// import { Heritage } from '../models/heritage.model.js';
-// import { HeritageVersion } from '../models/heritage-version.model.js';
-// import { BlockchainRecord } from '../models/blockchain-record.model.js';
-// import { Verification } from '../models/verification.model.js';
 
 const currentFile = fileURLToPath(import.meta.url);
 const currentDir = path.dirname(currentFile);
 const backendRoot = path.resolve(currentDir, '../..');
+
+// Chạy từ dist/ thì đuôi là js, chạy bằng tsx từ src/ thì là ts
+const ext = path.extname(currentFile) === '.ts' ? 'ts' : 'js';
+
+// currentDir = .../src/config hoặc .../dist/config -> lùi 1 cấp là src hoặc dist
+const baseDir = path.resolve(currentDir, '..');
 
 dotenv.config({ path: path.join(backendRoot, '.env') });
 
@@ -23,10 +23,13 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER ?? 'root',
   password: process.env.DB_USER_PASSWORD ?? '',
   database: process.env.DB_NAME ?? 'heritage_blockchain',
-  entities: ["src/**/*.model.ts"],
+  entities: [path.join(baseDir, '**', `*.model.${ext}`)],
+  migrations: [path.join(baseDir, 'migrations', `*.${ext}`)],
   synchronize: true,
   logging: process.env.DB_LOGGING === 'true',
-  migrations: ['src/migrations/*.ts'],
+  ssl: {
+    rejectUnauthorized: true
+  }
 });
 
 export async function initializeDatabase() {

@@ -13,7 +13,7 @@ const router = Router();
 router.post(
   '/:heritageId/publish',
   AuthMiddleware.authenticate,
-  requireRole([UserRole.ORG_ADMIN]),
+  requireRole([UserRole.ORG_ADMIN, UserRole.SYSTEM_ADMIN]),
   HeritageVersionController.publish
 );
 

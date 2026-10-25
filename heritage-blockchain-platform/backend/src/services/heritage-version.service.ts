@@ -18,6 +18,12 @@ export interface GetVersionFilter {
   limit?: number;
 }
 
+const formatToIso = (dateVal?: string | Date | null) => {
+  if (!dateVal) return null;
+  if (dateVal instanceof Date) return dateVal.toISOString();
+  // Nếu đã là string thì tạo Date object từ string đó
+  return new Date(dateVal).toISOString();
+};
 export class HeritageVersionService {
   private static versionRepo = AppDataSource.getRepository(HeritageVersion);
   private static IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs';
@@ -89,7 +95,7 @@ export class HeritageVersionService {
             heritage.sourceDocumentCid ?? null,
 
           recognizedAt: heritage.recognizedAt
-            ? heritage.recognizedAt.toISOString()
+            ? formatToIso(heritage.recognizedAt)
             : null,
         },
 

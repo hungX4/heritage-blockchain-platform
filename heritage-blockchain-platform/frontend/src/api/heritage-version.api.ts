@@ -12,17 +12,23 @@ export interface HeritageVersion {
   createdById: string;
 }
 
+export interface GetVersionsParams {
+  search?: string;
+  location?: string;
+  fieldId?: string;
+  fieldCode?: string;
+  fromDate?: string;
+  toDate?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const heritageVersionApi = {
   publish: (heritageId: string) =>
     axiosClient.post<{ success: boolean, data: HeritageVersion }>(`/version/${heritageId}/publish`),
 
   // 1. Lấy danh sách (Có tìm kiếm theo Name & Location)
-  getVersions: async (params?: {
-    search?: string;
-    location?: string;
-    page?: number;
-    limit?: number;
-  }) => {
+  getVersions: async (params?: GetVersionsParams) => {
     // Sửa kiểu trả về từ HeritageVersionItem[] sang PaginatedHeritageVersionResponse
     const response = await axiosClient.get<{ data: PaginatedHeritageVersionResponse }>('/version', { params });
     return response.data;

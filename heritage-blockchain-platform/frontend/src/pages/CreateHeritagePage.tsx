@@ -1,4 +1,4 @@
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Database } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { heritageApi } from '../services/heritage.api';
@@ -116,43 +116,77 @@ export function CreateHeritage() {
   };
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-sm font-medium uppercase text-emerald-700">Hệ thống di sản</p>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-900">Quản lý hồ sơ di sản</h1>
-        </div>
-        <button
-          className="inline-flex items-center gap-2 rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"
-          onClick={() => void loadHeritages()}
-        >
-          <RefreshCw size={16} /> Tải lại
-        </button>
+    <div className="relative min-h-screen bg-black text-stone-100 p-4 sm:p-6 lg:p-8 font-sans select-none space-y-8 overflow-x-hidden">
+
+      {/* ================= BACKGROUND IMAGE (DECOR) ================= */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-black opacity-90" /> {/* Dark overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25"
+          style={{
+            backgroundImage: 'url(https://wallpaperaccess.com/full/2165.jpg)',
+          }}
+        />
+        {/* Subtle amber glow blend at the bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-amber-950/20 to-transparent blur-3xl opacity-60" />
       </div>
 
-      <HeritageForm
-        initialData={editingHeritage}
-        categories={categories}
-        organizations={organizations}
-        onSubmit={handleFormSubmit}
-        onCancel={() => {
-          setEditingId(null);
-          setEditingHeritage(null);
-        }}
-      />
+      <div className="relative z-10 space-y-8">
 
-      <HeritageList
-        heritages={heritages}
-        loading={loading}
-        status={status}
-        search={search}
-        onStatusChange={setStatus}
-        onSearchChange={setSearch}
-        onSearchSubmit={() => void loadHeritages()}
-        onEdit={startEdit}
-        onSubmitForReview={(id) => void handleSubmitForReview(id)}
-        onRemove={(id) => void handleRemove(id)}
-      />
-    </section>
+        {/* ================= HEADER TIÊU ĐỀ (DARK THEME) ================= */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-stone-800/80 pb-5 pt-20">
+          <div>
+            <h1
+              className="text-2xl sm:text-2xl font-bold text-white tracking-normal"
+              style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+            >
+              Lập & Khai Báo Hồ Sơ Di Sản
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-stone-400">
+              Khởi tạo, chỉnh sửa thông tin di sản văn hóa và gửi kiểm duyệt lên Blockchain.
+            </p>
+          </div>
+
+          <button
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-stone-800 bg-stone-900 px-4 py-2.5 text-xs font-bold text-stone-300 hover:bg-[#A50C1E] hover:border-[#A50C1E] hover:text-white transition-all cursor-pointer shrink-0 shadow-lg"
+            onClick={() => void loadHeritages()}
+          >
+            <RefreshCw size={15} className={loading ? 'animate-spin text-amber-300' : ''} />
+            <span>Tải lại dữ liệu</span>
+          </button>
+        </div>
+
+        {/* ================= KHỐI FORM KÊ KHAI (DARK PANEL) ================= */}
+        <div className="rounded-2xl border border-stone-800/80 bg-stone-900/90 p-5 sm:p-6 shadow-2xl backdrop-blur">
+          <HeritageForm
+            initialData={editingHeritage}
+            categories={categories}
+            organizations={organizations}
+            onSubmit={handleFormSubmit}
+            onCancel={() => {
+              setEditingId(null);
+              setEditingHeritage(null);
+            }}
+          />
+        </div>
+
+        {/* ================= KHỐI DANH SÁCH HỒ SƠ (DARK PANEL) ================= */}
+        <div className="rounded-2xl border border-stone-800/80 bg-stone-900/90 p-5 sm:p-6 shadow-2xl backdrop-blur">
+          <HeritageList
+            heritages={heritages}
+            loading={loading}
+            status={status}
+            search={search}
+            onStatusChange={setStatus}
+            onSearchChange={setSearch}
+            onSearchSubmit={() => void loadHeritages()}
+            onEdit={startEdit}
+            onSubmitForReview={(id) => void handleSubmitForReview(id)}
+            onRemove={(id) => void handleRemove(id)}
+          />
+        </div>
+      </div>
+
+    </div>
   );
 }

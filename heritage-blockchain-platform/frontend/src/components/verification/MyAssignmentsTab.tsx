@@ -17,7 +17,6 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
   const [filterStatus, setFilterStatus] = useState<FilterStatusType>('PENDING');
   const [voteNotes, setVoteNotes] = useState<Record<string, string>>({});
 
-  // 🟢 Lưu vết các hồ sơ vừa vote thành công ở Client để chống ghi đè dữ liệu cũ từ server
   const [votedMap, setVotedMap] = useState<Record<string, { status: string; notes: string }>>({});
 
   const [pendingVote, setPendingVote] = useState<{
@@ -28,7 +27,6 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
 
   const [submitting, setSubmitting] = useState(false);
 
-  // 🟢 Hàm kết hợp dữ liệu gốc với các phiếu vừa vote ở local
   const effectiveAssignments = assignments.map((item) => {
     const localVote = votedMap[item.id];
     if (localVote) {
@@ -41,11 +39,9 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
     return item;
   });
 
-  // Tính toán số lượng dựa trên dữ liệu đã được đồng bộ chuẩn
   const pendingCount = effectiveAssignments.filter((item) => item.status === 'PENDING').length;
   const completedCount = effectiveAssignments.filter((item) => item.status !== 'PENDING').length;
 
-  // Lọc danh sách hiển thị theo tab
   const filteredAssignments = effectiveAssignments.filter((item) => {
     if (filterStatus === 'PENDING') return item.status === 'PENDING';
     if (filterStatus === 'COMPLETED') return item.status !== 'PENDING';
@@ -78,11 +74,9 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
 
     setSubmitting(true);
     try {
-      // 1. Gửi request lên server
       const res = await verificationApi.submitVote(pendingVote.verificationId, pendingVote.payload);
       toast.success(res.data?.message || 'Đã gửi phiếu đánh giá thành công!');
 
-      // 🟢 2. GHI NHỚ NGAY TRẠNG THÁI VỪA VOTE VÀO LOCAL MAP
       setVotedMap((prev) => ({
         ...prev,
         [pendingVote.verificationId]: {
@@ -91,10 +85,8 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
         },
       }));
 
-      // 🟢 3. CHUYỂN TAB SANG "ĐÃ THẨM ĐỊNH"
       setFilterStatus('COMPLETED');
 
-      // 4. Dọn dẹp form & đóng modal
       setVoteNotes((prev) => {
         const updated = { ...prev };
         delete updated[pendingVote.verificationId];
@@ -102,7 +94,6 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
       });
       setPendingVote(null);
 
-      // 5. Reload lại server data ngầm
       try {
         await onRefresh();
       } catch {
@@ -116,7 +107,7 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
   };
 
   if (loading && assignments.length === 0) {
-    return <div className="py-8 text-center text-sm text-slate-500">Đang tải danh sách nhiệm vụ...</div>;
+    return <div className="py-12 text-center text-xs text-slate-500">Đang tải danh sách nhiệm vụ thẩm định...</div>;
   }
 
   return (
@@ -126,8 +117,8 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
         <button
           type="button"
           onClick={() => setFilterStatus('PENDING')}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${filterStatus === 'PENDING'
-            ? 'bg-amber-100 text-amber-800 border border-amber-300'
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${filterStatus === 'PENDING'
+            ? 'bg-amber-100 text-amber-900 border border-amber-300'
             : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
             }`}
         >
@@ -138,8 +129,8 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
         <button
           type="button"
           onClick={() => setFilterStatus('COMPLETED')}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${filterStatus === 'COMPLETED'
-            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${filterStatus === 'COMPLETED'
+            ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
             : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
             }`}
         >
@@ -150,7 +141,7 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
         <button
           type="button"
           onClick={() => setFilterStatus('ALL')}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${filterStatus === 'ALL'
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${filterStatus === 'ALL'
             ? 'bg-slate-900 text-white'
             : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
             }`}
@@ -162,7 +153,7 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
 
       {/* Danh sách nhiệm vụ */}
       {filteredAssignments.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-stone-300 bg-white p-10 text-center text-xs text-slate-500 font-sans">
           {filterStatus === 'PENDING' && 'Không có hồ sơ nào đang chờ bạn biểu quyết.'}
           {filterStatus === 'COMPLETED' && 'Bạn chưa biểu quyết hồ sơ nào.'}
           {filterStatus === 'ALL' && 'Không tìm thấy hồ sơ di sản nào.'}
@@ -172,54 +163,59 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
           const isPending = item.status === 'PENDING';
 
           return (
-            <div key={item.id} className="rounded-lg border border-stone-200 bg-white p-5 space-y-4 shadow-sm">
+            <div key={item.id} className="rounded-xl border border-stone-200 bg-white p-5 space-y-4 shadow-xs">
               <div className="flex items-start justify-between gap-4 border-b border-stone-100 pb-3">
                 <div>
-                  <h3 className="font-semibold text-slate-900 text-base">{item.heritage?.name}</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Mã hồ sơ: {item.heritage?.heritageCode}</p>
+                  <h3
+                    className="font-bold text-slate-900 text-base"
+                    style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+                  >
+                    {item.heritage?.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">Mã hồ sơ: <span className="font-mono text-slate-800 font-semibold">{item.heritage?.heritageCode}</span></p>
                 </div>
 
                 {!isPending ? (
                   <span
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${item.status === 'APPROVED'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold border ${item.status === 'APPROVED'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                       : item.status === 'REJECTED'
-                        ? 'bg-rose-50 text-rose-700 border-rose-200'
-                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                        ? 'bg-rose-50 text-rose-800 border-rose-200'
+                        : 'bg-amber-50 text-amber-800 border-amber-200'
                       }`}
                   >
                     {item.status === 'APPROVED' && (
                       <>
-                        <CheckCircle2 size={14} /> Đã chấp thuận
+                        <CheckCircle2 size={14} className="text-emerald-700" /> Đã chấp thuận
                       </>
                     )}
                     {item.status === 'REJECTED' && (
                       <>
-                        <XCircle size={14} /> Đã từ chối
+                        <XCircle size={14} className="text-rose-700" /> Đã từ chối
                       </>
                     )}
                     {item.status === 'ABSTAINED' && (
                       <>
-                        <MinusCircle size={14} /> Phiếu trắng
+                        <MinusCircle size={14} className="text-amber-700" /> Phiếu trắng
                       </>
                     )}
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold border bg-amber-50 text-amber-800 border-amber-200">
                     <Clock size={14} /> Chờ biểu quyết
                   </span>
                 )}
               </div>
 
               {isPending ? (
-                <>
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                      Ý kiến chuyên môn <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+                      Ý kiến chuyên môn <span className="text-rose-600">*</span>
                     </label>
                     <textarea
                       rows={3}
-                      className="w-full rounded border border-stone-300 p-2 text-sm outline-none focus:border-emerald-700"
+                      className="w-full rounded-lg border border-stone-300 p-2.5 text-xs text-slate-800 outline-none transition-colors focus:border-[#A50C1E]"
                       placeholder="Nhập nhận xét chi tiết và căn cứ chuyên môn (bắt buộc, tối thiểu 10 ký tự)..."
                       value={voteNotes[item.id] || ''}
                       onChange={(e) =>
@@ -231,33 +227,33 @@ export function MyAssignmentsTab({ assignments, loading, onRefresh }: MyAssignme
                   <div className="flex flex-wrap items-center gap-2 pt-1">
                     <button
                       type="button"
-                      className="rounded bg-emerald-700 px-4 py-1.5 text-xs font-medium text-white hover:bg-emerald-800 transition-colors"
+                      className="rounded-lg bg-[#A50C1E] px-4 py-2 text-xs font-bold text-white hover:bg-red-800 transition-colors cursor-pointer shadow-xs"
                       onClick={() => handleInitiateVote(item.id, item.heritage?.name, 'APPROVED')}
                     >
                       Chấp thuận
                     </button>
                     <button
                       type="button"
-                      className="rounded bg-rose-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-rose-700 transition-colors"
+                      className="rounded-lg bg-rose-800 px-4 py-2 text-xs font-bold text-white hover:bg-rose-900 transition-colors cursor-pointer shadow-xs"
                       onClick={() => handleInitiateVote(item.id, item.heritage?.name, 'REJECTED')}
                     >
                       Từ chối
                     </button>
                     <button
                       type="button"
-                      className="rounded bg-slate-500 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-600 transition-colors"
+                      className="rounded-lg bg-slate-700 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors cursor-pointer shadow-xs"
                       onClick={() => handleInitiateVote(item.id, item.heritage?.name, 'ABSTAINED')}
                     >
                       Phiếu trắng
                     </button>
                   </div>
-                </>
+                </div>
               ) : (
                 <div>
-                  <span className="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                  <span className="block text-xs font-bold text-slate-500 uppercase mb-1">
                     Ý kiến chuyên môn đã ghi nhận:
                   </span>
-                  <div className="rounded-lg border border-stone-200 bg-slate-50 p-3 text-sm italic text-slate-700">
+                  <div className="rounded-lg border border-stone-200 bg-stone-50 p-3 text-xs italic text-slate-700">
                     "{item.notes || 'Không có nhận xét bổ sung.'}"
                   </div>
                 </div>

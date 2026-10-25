@@ -4,8 +4,6 @@ import {
   ArrowLeft,
   ShieldCheck,
   MapPin,
-  Calendar,
-  Building,
   ExternalLink,
   Image as ImageIcon,
   Video,
@@ -15,13 +13,13 @@ import {
   AlertTriangle,
   RefreshCw,
   X,
-  Copy,
-  Check,
-  Tag,
-  Hash,
   FileText,
-  FileCode,
   Globe,
+  Award,
+  Maximize2,
+  Share2,
+  Printer,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { heritageVersionApi } from '../api/heritage-version.api';
 import { heritageApi } from '../api/heritage.api';
@@ -45,15 +43,18 @@ export function HeritageDetailPage() {
   const [versionData, setVersionData] = useState<HeritageVersionItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // State cho Modal Integrity Check & Modal Xem ảnh
+  // State quản lý Media
+  const [activeMediaIndex, setActiveMediaIndex] = useState<number>(0);
+
+  // State Modals
   const [verifying, setVerifying] = useState<boolean>(false);
   const [integrityData, setIntegrityData] = useState<HeritageIntegrityResult | null>(null);
   const [selectedImage, setSelectedImage] = useState<{ url: string; caption?: string } | null>(null);
-  const [copiedHash, setCopiedHash] = useState<string | null>(null);
+
   const [heritageRecord, setHeritageRecord] = useState<Heritage | null>(null);
   const [statusSubmitting, setStatusSubmitting] = useState(false);
 
-  // Tải chi tiết phiên bản di sản
+  // Tải thông tin
   const fetchDetail = async () => {
     if (!id) return;
     try {
@@ -93,7 +94,7 @@ export function HeritageDetailPage() {
     fetchDetail();
   }, [id]);
 
-  // Kiểm tra tính toàn vẹn dữ liệu qua Blockchain API
+  // Kiểm tra tính toàn vẹn Blockchain
   const handleCheckIntegrity = async () => {
     if (!versionData?.heritageId) return;
     try {
@@ -108,17 +109,39 @@ export function HeritageDetailPage() {
     }
   };
 
-  // Helper sao chép
-  const handleCopy = (text: string) => {
+  // Helper Sao chép
+  const handleCopyText = (text: string, msg: string = 'Đã sao chép') => {
     navigator.clipboard.writeText(text);
-    setCopiedHash(text);
-    toast.success('Đã sao chép');
-    setTimeout(() => setCopiedHash(null), 2000);
+    toast.success(msg);
   };
 
-  // Helper hiển thị địa điểm (Xã, Huyện, Tỉnh)
+  // Chức năng Chia sẻ / In / Liên kết
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: versionData?.canonicalData?.heritage?.name || 'Chi tiết di sản',
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      handleCopyText(window.location.href, 'Đã sao chép liên kết chia sẻ!');
+    }
+  };
+
+  const handleCopyLink = () => {
+    handleCopyText(window.location.href, 'Đã sao chép đường dẫn liên kết!');
+  };
+
+  // Helper địa điểm
   const renderLocations = (locations?: LocationItem[] | null) => {
-    if (!locations || locations.length === 0) return 'Chưa có thông tin';
+    if (!locations || locations.length === 0) return 'Chưa có thông tin địa giới';
     return locations
       .map((loc) => [loc.ward, loc.district, loc.province].filter(Boolean).join(', '))
       .join('; ');
@@ -126,10 +149,10 @@ export function HeritageDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#fbfbf9]">
+      <div className="flex min-h-screen items-center justify-center bg-[#fbfbf9] pt-24">
         <div className="flex flex-col items-center gap-3">
-          <RefreshCw size={32} className="animate-spin text-emerald-800" />
-          <p className="text-sm font-medium text-slate-600">Đang tải thông tin hồ sơ di sản...</p>
+          <RefreshCw size={36} className="animate-spin text-[#A50C1E]" />
+          <p className="text-xs font-medium text-slate-600">Đang tải thông tin hồ sơ di sản...</p>
         </div>
       </div>
     );
@@ -137,13 +160,13 @@ export function HeritageDetailPage() {
 
   if (!versionData) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#fbfbf9] p-6 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#fbfbf9] p-6 text-center pt-24">
         <AlertTriangle size={48} className="text-amber-500 mb-3" />
         <h2 className="text-xl font-bold text-slate-800">Không tìm thấy di sản</h2>
-        <p className="mt-1 text-sm text-slate-500">Hồ sơ di sản có thể đã bị xóa hoặc đường dẫn không hợp lệ.</p>
+        <p className="mt-1 text-xs text-slate-500">Hồ sơ di sản có thể đã bị xóa hoặc đường dẫn không hợp lệ.</p>
         <button
-          onClick={() => navigate('/heritage/list')}
-          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900"
+          onClick={() => navigate('/heritages')}
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#A50C1E] px-4 py-2 text-xs font-bold text-white hover:bg-red-800 transition-all cursor-pointer"
         >
           <ArrowLeft size={16} /> Quay lại danh sách
         </button>
@@ -155,330 +178,292 @@ export function HeritageDetailPage() {
   const heritage = canonical?.heritage;
   const field = canonical?.field;
 
-  // Tổng hợp media từ mediaList hoặc media của versionData / canonicalData
   const mediaList: HeritageVersionMedia[] =
     versionData.mediaList ||
     versionData.media ||
     canonical?.media ||
     [];
 
-  // Phân loại Media
-  const images = mediaList.filter((m) => m.type?.toUpperCase() === 'IMAGE');
-  const videos = mediaList.filter((m) => m.type?.toUpperCase() === 'VIDEO');
-  const audios = mediaList.filter((m) => m.type?.toUpperCase() === 'AUDIO');
+  const currentMedia = mediaList[activeMediaIndex] || null;
 
   return (
-    <div className="min-h-screen bg-[#fbfbf9] p-4 sm:p-6 font-sans text-slate-800">
-      {/* Header Điều Hướng */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-stone-200 pb-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-emerald-800 transition-colors"
-        >
-          <ArrowLeft size={18} /> Quay lại
-        </button>
+    <div className="relative min-h-screen bg-[#fbfbf9] text-slate-800 pt-28 pb-16 px-4 sm:px-6 lg:px-8 font-sans">
 
-        {/* Nút Xác thực Blockchain Integrity */}
-        <button
-          onClick={handleCheckIntegrity}
-          disabled={verifying}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-900 disabled:opacity-50"
-        >
-          <ShieldCheck size={18} />
-          {verifying ? 'Đang xác thực Integrity...' : 'Xác thực Toàn vẹn Blockchain'}
-        </button>
-      </div>
+      {/* ===== KHỐI ĐỎ PHỦ KÍN CHIỀU NGANG MÀN HÌNH, PHÍA SAU NAVBAR ===== */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[88px] w-[870px] left-1/2 -translate-x-1/2 bg-[#A50C1E]" />
 
-      {currentUser?.role === 'SYSTEM_ADMIN' && heritageRecord && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white p-4">
-          <div>
-            <p className="text-sm font-semibold text-slate-900">Trạng thái hồ sơ</p>
-            <p className="text-xs text-slate-500">Chỉ quản trị viên hệ thống có thể thay đổi trạng thái.</p>
+      <div className="relative z-10 max-w-4xl mx-auto space-y-5">
+
+
+
+        {/* ================= KHUNG HIỂN THỊ MEDIA (CAO THEO MÀN HÌNH) ================= */}
+        <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+
+          {/* Khung cố định: rộng full cột, cao 45% chiều cao màn hình (200px – 440px) */}
+          <div className="relative w-full h-[clamp(200px,45vh,440px)] flex items-center justify-center bg-[#fbfbf9] overflow-hidden group">
+            {!currentMedia ? (
+              <div className="flex flex-col items-center gap-2 px-4 text-center text-stone-400">
+                <ImageIcon size={48} className="opacity-30" />
+                <p className="text-xs">Chưa có phương tiện hình ảnh / video đính kèm</p>
+              </div>
+            ) : currentMedia.type?.toUpperCase() === 'VIDEO' ? (
+              <video
+                controls
+                src={currentMedia.url}
+                poster={currentMedia.thumbnailUrl}
+                className="h-full w-full object-contain bg-black"
+              />
+            ) : currentMedia.type?.toUpperCase() === 'AUDIO' ? (
+              <div className="h-full w-full p-4 sm:p-8 flex flex-col items-center justify-center text-center space-y-3 sm:space-y-4 bg-stone-50 overflow-y-auto">
+                <div className="p-3 sm:p-4 rounded-full bg-red-100 text-[#A50C1E]">
+                  <Music size={32} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800">{currentMedia.caption || 'Bản ghi âm tư liệu'}</p>
+                  {currentMedia.cid && <p className="text-[11px] font-mono text-slate-500 mt-1 break-all">CID: {currentMedia.cid}</p>}
+                </div>
+                <audio controls src={currentMedia.url} className="w-full max-w-md h-10" />
+              </div>
+            ) : (
+              <>
+                <img
+                  src={currentMedia.url || currentMedia.thumbnailUrl}
+                  alt={currentMedia.caption || 'Ảnh di sản'}
+                  className="h-full w-full object-contain"
+                />
+                <button
+                  onClick={() => setSelectedImage({ url: currentMedia.url || currentMedia.thumbnailUrl || '', caption: currentMedia.caption })}
+                  className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 rounded-lg bg-black/50 text-white hover:bg-[#A50C1E] transition-all sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
+                  title="Phóng to ảnh"
+                >
+                  <Maximize2 size={16} />
+                </button>
+              </>
+            )}
           </div>
-          <select
-            aria-label="Cập nhật trạng thái hồ sơ"
-            value={heritageRecord.status}
-            onChange={handleStatusChange}
-            disabled={statusSubmitting}
-            className="min-w-52 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-emerald-600 focus:outline-none disabled:opacity-50"
-          >
-            {Object.values(HeritageStatus).map((status) => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-        </div>
-      )}
 
-      <div className="space-y-6 max-w-6xl mx-auto">
-        {/* Card Tổng Quan */}
-        <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              {field?.name && (
-                <span className="inline-flex items-center gap-1 rounded bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
-                  <Tag size={12} /> {field.name}
-                </span>
-              )}
-              {heritage?.heritageCode && (
-                <span className="inline-flex items-center gap-1 rounded bg-stone-100 border border-stone-200 px-2 py-0.5 text-xs font-mono font-medium text-slate-700">
-                  Mã: {heritage.heritageCode}
-                </span>
-              )}
-              <span className="inline-flex items-center rounded-full bg-slate-900 px-2.5 py-0.5 text-xs font-mono font-medium text-white">
-                v{versionData.version}
+
+          {/* Thumbnails danh sách Media */}
+          {mediaList.length > 1 && (
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 max-w-full">
+              {mediaList.map((m, idx) => {
+                const isSelected = activeMediaIndex === idx;
+                return (
+                  <button
+                    key={m.id || idx}
+                    onClick={() => setActiveMediaIndex(idx)}
+                    className={`relative h-16 w-20 shrink-0 rounded-lg border overflow-hidden transition-all cursor-pointer ${isSelected
+                      ? 'border-[#A50C1E] ring-2 ring-[#A50C1E]/30 scale-105'
+                      : 'border-stone-200 bg-stone-100 opacity-70 hover:opacity-100'
+                      }`}
+                  >
+                    {m.type?.toUpperCase() === 'AUDIO' ? (
+                      <div className="flex h-full w-full items-center justify-center bg-stone-100 text-[#A50C1E]">
+                        <Music size={20} />
+                      </div>
+                    ) : m.type?.toUpperCase() === 'VIDEO' ? (
+                      <div className="relative h-full w-full bg-black flex items-center justify-center">
+                        <Video size={18} className="text-white" />
+                      </div>
+                    ) : (
+                      <img src={m.url || m.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* HÀNG CÔNG CỤ: CHIA SẺ | IN | LIÊN KẾT | XÁC THỰC ON-CHAIN */}
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 py-2.5 text-xs sm:text-sm text-slate-600 border-b border-stone-200 w-full">
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-1.5 hover:text-[#A50C1E] transition-colors cursor-pointer"
+            >
+              <Share2 size={15} /> Chia sẻ
+            </button>
+            <span className="text-stone-300">|</span>
+            <button
+              onClick={handlePrint}
+              className="inline-flex items-center gap-1.5 hover:text-[#A50C1E] transition-colors cursor-pointer"
+            >
+              <Printer size={15} /> In
+            </button>
+            <span className="text-stone-300">|</span>
+            <button
+              onClick={handleCopyLink}
+              className="inline-flex items-center gap-1.5 hover:text-[#A50C1E] transition-colors cursor-pointer"
+            >
+              <LinkIcon size={15} /> Liên kết
+            </button>
+            <span className="text-stone-300">|</span>
+            <button
+              onClick={handleCheckIntegrity}
+              disabled={verifying}
+              className="inline-flex items-center gap-1.5 font-bold text-[#A50C1E] hover:text-red-800 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <ShieldCheck size={16} />
+              <span>{verifying ? 'Đang xác minh...' : 'Xác thực On-Chain'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* ================= TIÊU ĐỀ DI SẢN & BẢNG THÔNG TIN CHI TIẾT ================= */}
+        <div className="space-y-4 pt-2">
+
+          {/* Tên tiêu đề tác phẩm / di sản */}
+          <h1
+            className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight"
+            style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+          >
+            {heritage?.name || 'Chưa có tên di sản'}
+          </h1>
+
+          {/* Bảng danh sách thông tin chuẩn kẻ ngang */}
+          <div className="border-t border-stone-200 divide-y divide-stone-200 text-xs sm:text-sm">
+
+            {/* Tác giả / Nguồn đơn vị */}
+            <div className="py-3.5 grid grid-cols-1 sm:grid-cols-4 gap-1 sm:gap-4 items-baseline">
+              <span className="font-bold text-slate-900">Tác giả / Đơn vị quản lý:</span>
+              <span className="sm:col-span-3 text-slate-700 font-medium">
+                {heritage?.sourceOrganization || heritage?.source || '—'}
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
-              {heritage?.name || 'Chưa có tên di sản'}
-            </h1>
+            {/* Loại hình di sản */}
+            <div className="py-3.5 grid grid-cols-1 sm:grid-cols-4 gap-1 sm:gap-4 items-baseline">
+              <span className="font-bold text-slate-900">Loại hình / Danh mục:</span>
+              <span className="sm:col-span-3 text-slate-700">
+                {field?.name || 'Chưa phân loại'}
+              </span>
+            </div>
+
+            {/* Mã di sản */}
+            <div className="py-3.5 grid grid-cols-1 sm:grid-cols-4 gap-1 sm:gap-4 items-baseline">
+              <span className="font-bold text-slate-900">Mã hồ sơ di sản:</span>
+              <span className="sm:col-span-3 font-mono font-medium text-slate-800">
+                {heritage?.heritageCode || '—'}
+              </span>
+            </div>
+
+            {/* Thời gian công nhận / sáng tác */}
+            <div className="py-3.5 grid grid-cols-1 sm:grid-cols-4 gap-1 sm:gap-4 items-baseline">
+              <span className="font-bold text-slate-900">Thời gian công nhận / Sáng tác:</span>
+              <span className="sm:col-span-3 text-slate-700">
+                {heritage?.recognizedAt
+                  ? new Date(heritage.recognizedAt).toLocaleDateString('vi-VN')
+                  : '—'}
+              </span>
+            </div>
+
+            {/* Số hiệu quyết định (nếu có) */}
+            {heritage?.sourceDocumentNumber && (
+              <div className="py-3.5 grid grid-cols-1 sm:grid-cols-4 gap-1 sm:gap-4 items-baseline">
+                <span className="font-bold text-slate-900">Số hiệu quyết định / Căn cứ:</span>
+                <span className="sm:col-span-3 text-slate-700">
+                  {heritage.sourceDocumentNumber}
+                </span>
+              </div>
+            )}
+
+            {/* Mã IPFS CID (nếu có) */}
+            {heritage?.sourceDocumentCid && (
+              <div className="py-3.5 grid grid-cols-1 sm:grid-cols-4 gap-1 sm:gap-4 items-baseline">
+                <span className="font-bold text-slate-900">Mã IPFS CID văn bản:</span>
+                <span className="sm:col-span-3 font-mono text-xs text-[#A50C1E] break-all">
+                  {heritage.sourceDocumentCid}
+                </span>
+              </div>
+            )}
+
+            {/* Link văn bản tư liệu gốc */}
+            {heritage?.sourceUrl && (
+              <div className="py-3.5 grid grid-cols-1 sm:grid-cols-4 gap-1 sm:gap-4 items-baseline">
+                <span className="font-bold text-slate-900">Tư liệu tham chiếu:</span>
+                <span className="sm:col-span-3">
+                  <a
+                    href={heritage.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 font-medium text-[#A50C1E] hover:underline"
+                  >
+                    <Globe size={14} /> Xem quyết định / tư liệu gốc <ExternalLink size={12} />
+                  </a>
+                </span>
+              </div>
+            )}
+
+            {/* Hiện vật / Di sản đang lưu giữ tại */}
+            <div className="py-3.5 grid grid-cols-1 sm:grid-cols-4 gap-1 sm:gap-4 items-baseline">
+              <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                <MapPin size={16} className="text-[#A50C1E]" /> Địa điểm / Lưu giữ tại:
+              </span>
+              <span className="sm:col-span-3 font-semibold text-[#A50C1E]">
+                {renderLocations(heritage?.location)}
+              </span>
+            </div>
+
           </div>
-
-          {/* Lưới Thông Tin Cơ Bản */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 border-t border-stone-100 pt-5 text-sm">
-            {/* Địa điểm */}
-            <div className="flex items-start gap-2.5">
-              <MapPin size={18} className="text-emerald-700 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-slate-500 font-medium">Địa điểm / Địa giới hành chính</p>
-                <p className="font-semibold text-slate-800 mt-0.5">{renderLocations(heritage?.location)}</p>
-              </div>
-            </div>
-
-            {/* Thời điểm ghi danh */}
-            <div className="flex items-start gap-2.5">
-              <Calendar size={18} className="text-emerald-700 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-slate-500 font-medium">Thời điểm ghi danh</p>
-                <p className="font-semibold text-slate-800 mt-0.5">
-                  {heritage?.recognizedAt
-                    ? new Date(heritage.recognizedAt).toLocaleDateString('vi-VN')
-                    : 'Chưa cập nhật'}
-                </p>
-              </div>
-            </div>
-
-            {/* Đơn vị & Nguồn tư liệu */}
-            <div className="flex items-start gap-2.5">
-              <Building size={18} className="text-emerald-700 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-slate-500 font-medium">Nguồn / Đơn vị quản lý</p>
-                <p className="font-semibold text-slate-800 mt-0.5">
-                  {heritage?.sourceOrganization || 'Chưa cập nhật'}
-                </p>
-                {heritage?.source && (
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Nguồn gốc: <span className="text-slate-700 font-medium">{heritage.source}</span>
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Thông tin Văn bản Pháp lý gốc & Link IPFS (nếu có) */}
-          {(heritage?.sourceDocumentNumber || heritage?.sourceUrl || heritage?.sourceDocumentCid) && (
-            <div className="mt-5 rounded-xl bg-stone-50 p-4 border border-stone-200/80 text-xs space-y-2">
-              <p className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
-                <FileCode size={15} className="text-emerald-700" /> Văn bản Hồ sơ / Pháp lý đính kèm:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
-                {heritage.sourceDocumentNumber && (
-                  <p>
-                    <span className="font-medium text-slate-700">Số hiệu văn bản:</span> {heritage.sourceDocumentNumber}
-                  </p>
-                )}
-                {heritage.sourceDocumentCid && (
-                  <p className="font-mono truncate">
-                    <span className="font-sans font-medium text-slate-700">IPFS CID:</span> {heritage.sourceDocumentCid}
-                  </p>
-                )}
-                {heritage.sourceUrl && (
-                  <div className="sm:col-span-2">
-                    <a
-                      href={heritage.sourceUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 font-medium text-emerald-800 hover:underline"
-                    >
-                      <Globe size={13} /> Truy cập liên kết văn bản tư liệu gốc <ExternalLink size={12} />
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
-
-        {/* Nội dung Mô tả Chi tiết */}
-        <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm space-y-3">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <FileText size={18} className="text-emerald-800" /> Mô tả chi tiết di sản
+        {/* CẬP NHẬT TRẠNG THÁI (CHỈ VỚI SYSTEM ADMIN) */}
+        {currentUser?.role === 'SYSTEM_ADMIN' && heritageRecord && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2 text-amber-900">
+              <Award size={18} className="text-[#A50C1E]" />
+              <span className="text-xs font-bold uppercase tracking-wide">Trạng Thái Hồ Sơ (Quản trị viên)</span>
+            </div>
+            <select
+              aria-label="Cập nhật trạng thái hồ sơ"
+              value={heritageRecord.status}
+              onChange={handleStatusChange}
+              disabled={statusSubmitting}
+              className="rounded-md border border-stone-300 bg-white px-3 py-1 text-xs font-medium text-slate-800 focus:border-[#A50C1E] outline-none cursor-pointer"
+            >
+              {Object.values(HeritageStatus).map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {/* ================= MÔ TẢ CHI TIẾT NẰM Ở DƯỚI CÙNG ================= */}
+        <div className="pt-6 border-t border-stone-200 space-y-3">
+          <h2
+            className="text-lg font-bold text-slate-900 flex items-center gap-2"
+            style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+          >
+            <FileText size={18} className="text-[#A50C1E]" /> Mô Tả Chi Tiết
           </h2>
-          <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-line border-t border-stone-100 pt-3">
+          <div className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line font-sans">
             {heritage?.description || 'Chưa có thông tin mô tả chi tiết cho di sản này.'}
           </div>
         </div>
 
-        {/* --- KHU VỰC MEDIA (CHỈ HIỂN THỊ KHI CÓ DỮ LIỆU) --- */}
-
-        {/* 1. THƯ VIỆN HÌNH ẢNH */}
-        {images.length > 0 && (
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-            <h2 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <ImageIcon size={18} className="text-emerald-800" />
-              Thư viện Hình ảnh tư liệu ({images.length})
-            </h2>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {images.map((img, idx) => {
-                // Đảm bảo imgUrl luôn luôn là kiểu string để không bị lỗi TypeScript undefined
-                const imgUrl = img.url || img.thumbnailUrl || '';
-                return (
-                  <div
-                    key={img.id || idx}
-                    onClick={() => setSelectedImage({ url: imgUrl, caption: img.caption })}
-                    className="group relative aspect-4/3 overflow-hidden rounded-xl border border-stone-200 bg-stone-100 cursor-pointer shadow-xs hover:border-emerald-600 transition-all"
-                  >
-                    <img
-                      src={imgUrl}
-                      alt={img.caption || heritage?.name || 'Hình ảnh di sản'}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    {img.caption && (
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-[11px] text-white truncate">
-                        {img.caption}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* 2. VIDEO TƯ LIỆU */}
-        {videos.length > 0 && (
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-            <h2 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <Video size={18} className="text-emerald-800" />
-              Video Tư liệu ({videos.length})
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {videos.map((vid, idx) => (
-                <div key={vid.id || idx} className="overflow-hidden rounded-xl border border-stone-200 bg-black">
-                  <video
-                    controls
-                    src={vid.url}
-                    poster={vid.thumbnailUrl}
-                    className="w-full aspect-video object-contain"
-                  >
-                    Trình duyệt của bạn không hỗ trợ thẻ video.
-                  </video>
-                  {vid.caption && (
-                    <div className="p-3 bg-stone-900 text-slate-200 text-xs">
-                      <p className="text-slate-300">{vid.caption}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 3. BẢN GHI ÂM (AUDIO) */}
-        {audios.length > 0 && (
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-            <h2 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <Music size={18} className="text-emerald-800" />
-              Tư liệu Âm thanh & Thuyết minh ({audios.length})
-            </h2>
-
-            <div className="space-y-3">
-              {audios.map((aud, idx) => (
-                <div
-                  key={aud.id || idx}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-stone-200 bg-stone-50"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-emerald-100 text-emerald-800">
-                      <Music size={20} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">
-                        {aud.caption || `Bản ghi âm tư liệu #${idx + 1}`}
-                      </p>
-                      {aud.cid && <p className="text-xs font-mono text-slate-400 mt-0.5">CID: {aud.cid}</p>}
-                    </div>
-                  </div>
-
-                  <audio controls src={aud.url} className="w-full sm:w-72 h-10">
-                    Trình duyệt không hỗ trợ thẻ audio.
-                  </audio>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Khối Thông tin Hash Xác thực Blockchain */}
-        <div className="rounded-2xl border border-stone-200 bg-slate-900 p-6 text-slate-300 shadow-sm font-mono text-xs space-y-3">
-          <div className="flex items-center justify-between text-slate-400 font-sans border-b border-slate-800 pb-3">
-            <span className="font-bold flex items-center gap-1.5 text-white">
-              <Hash size={16} className="text-emerald-400" /> Thông tin Bản ghi Hash Blockchain
-            </span>
-            <span>Version #{versionData.version}</span>
-          </div>
-
-          <div>
-            <span className="text-slate-500 block text-[10px] uppercase">Data Hash (SHA-256):</span>
-            <div className="flex items-center justify-between gap-2 mt-0.5">
-              <span className="truncate text-emerald-400">{versionData.dataHash || '—'}</span>
-              {versionData.dataHash && (
-                <button
-                  onClick={() => handleCopy(versionData.dataHash!)}
-                  className="text-slate-400 hover:text-white shrink-0"
-                >
-                  {copiedHash === versionData.dataHash ? <Check size={14} /> : <Copy size={14} />}
-                </button>
-              )}
-            </div>
-          </div>
-
-          {versionData.blockchainTxHash && (
-            <div className="border-t border-slate-800 pt-2">
-              <span className="text-slate-500 block text-[10px] uppercase">Transaction Hash:</span>
-              <a
-                href={`https://sepolia.etherscan.io/tx/${versionData.blockchainTxHash}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-blue-400 hover:underline truncate mt-0.5"
-              >
-                {versionData.blockchainTxHash} <ExternalLink size={12} />
-              </a>
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* --- MODAL HIỂN THỊ KẾT QUẢ INTEGRITY CHECK --- */}
+      {/* ================= MODAL XÁC THỰC TOÀN VẸN INTEGRITY ================= */}
       {integrityData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl border border-stone-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl border border-stone-200 text-slate-800">
             <div className="flex items-center justify-between border-b border-stone-200 pb-4">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <div
-                  className={`grid h-10 w-10 place-items-center rounded-full ${integrityData.integrityValid ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                  className={`grid h-10 w-10 place-items-center rounded-xl border ${integrityData.integrityValid
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    : 'bg-red-50 border-red-200 text-red-700'
                     }`}
                 >
                   <ShieldCheck size={22} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">
-                    Kết Quả Xác Thực Toàn Vẹn Dữ Liệu
+                  <h3
+                    className="text-base font-bold text-slate-900"
+                    style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+                  >
+                    Kết Quả Xác Thực Toàn Vẹn On-Chain
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-[11px] text-slate-500">
                     Phiên bản v{integrityData.version} • {new Date(integrityData.verifiedAt).toLocaleString('vi-VN')}
                   </p>
                 </div>
@@ -486,7 +471,7 @@ export function HeritageDetailPage() {
 
               <button
                 onClick={() => setIntegrityData(null)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-stone-100 hover:text-slate-700"
+                className="rounded-lg p-1 text-slate-400 hover:bg-stone-100 hover:text-slate-700 transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
@@ -494,39 +479,39 @@ export function HeritageDetailPage() {
 
             <div className="mt-5 space-y-4">
               <div
-                className={`flex items-center gap-3 rounded-xl border p-4 ${integrityData.integrityValid
+                className={`flex items-start gap-3 rounded-xl border p-4 ${integrityData.integrityValid
                   ? 'border-emerald-200 bg-emerald-50/50 text-emerald-900'
-                  : 'border-rose-200 bg-rose-50/50 text-rose-900'
+                  : 'border-red-200 bg-red-50/50 text-red-900'
                   }`}
               >
                 {integrityData.integrityValid ? (
-                  <CheckCircle2 size={24} className="text-emerald-600 shrink-0" />
+                  <CheckCircle2 size={22} className="text-emerald-600 shrink-0 mt-0.5" />
                 ) : (
-                  <XCircle size={24} className="text-rose-600 shrink-0" />
+                  <XCircle size={22} className="text-red-600 shrink-0 mt-0.5" />
                 )}
                 <div>
-                  <p className="font-bold text-xs uppercase tracking-wide">
+                  <p className="font-bold text-xs uppercase tracking-wider">
                     {integrityData.integrityValid
                       ? 'Dữ liệu đảm bảo toàn vẹn tuyệt đối'
-                      : 'Cảnh báo: Dữ liệu bị thay đổi bất hợp lệ'}
+                      : 'Cảnh báo: Dữ liệu có sự sai lệch'}
                   </p>
-                  <p className="text-xs mt-0.5 text-slate-600">
+                  <p className="text-xs mt-1 text-slate-600 leading-relaxed">
                     {integrityData.integrityValid
-                      ? 'Mã Hash dữ liệu hiện tại hoàn toàn khớp với bản ghi On-Chain Blockchain.'
-                      : 'Dữ liệu trong Database có dấu hiệu bị can thiệp sai lệch so với Smart Contract.'}
+                      ? 'Mã Hash tính toán từ CSDL hoàn toàn trùng khớp với bản ghi được niêm phong trên Smart Contract.'
+                      : 'Mã Hash trong CSDL khác với bản ghi On-Chain. Hồ sơ có thể đã bị can thiệp ngoài hệ thống.'}
                   </p>
                 </div>
               </div>
 
               {/* Chi tiết Hash so sánh */}
-              <div className="space-y-2 rounded-xl bg-slate-900 p-4 font-mono text-xs text-slate-300">
+              <div className="space-y-3 rounded-xl bg-slate-900 p-4 font-mono text-xs text-slate-200">
                 <div>
-                  <span className="text-slate-500 block text-[10px]">CURRENT DATA HASH:</span>
-                  <span className="text-emerald-400 break-all">{integrityData.currentDataHash}</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-sans">CURRENT DATABASE HASH:</span>
+                  <span className="text-emerald-400 break-all font-semibold">{integrityData.currentDataHash}</span>
                 </div>
-                <div className="border-t border-slate-800 pt-2">
-                  <span className="text-slate-500 block text-[10px]">BLOCKCHAIN ON-CHAIN HASH:</span>
-                  <span className="text-blue-400 break-all">{integrityData.blockchainDataHash}</span>
+                <div className="border-t border-slate-800 pt-2.5">
+                  <span className="text-slate-400 block text-[10px] uppercase font-sans">BLOCKCHAIN ON-CHAIN HASH:</span>
+                  <span className="text-blue-400 break-all font-semibold">{integrityData.blockchainDataHash}</span>
                 </div>
               </div>
             </div>
@@ -534,7 +519,7 @@ export function HeritageDetailPage() {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setIntegrityData(null)}
-                className="rounded-lg bg-stone-200 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-stone-300 transition-colors"
+                className="rounded-lg bg-[#A50C1E] px-5 py-2 text-xs font-bold text-white hover:bg-red-800 transition-all cursor-pointer shadow-xs"
               >
                 Đóng
               </button>
@@ -543,22 +528,22 @@ export function HeritageDetailPage() {
         </div>
       )}
 
-      {/* --- MODAL PHÓNG TO ẢNH --- */}
+      {/* ================= MODAL PHÓNG TO HÌNH ẢNH ================= */}
       {selectedImage && (
         <div
           onClick={() => setSelectedImage(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs animate-in fade-in duration-200"
         >
-          <div className="relative max-w-4xl overflow-hidden rounded-xl bg-black p-2" onClick={(e) => e.stopPropagation()}>
+          <div className="relative max-w-5xl overflow-hidden rounded-2xl bg-black p-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute right-3 top-3 rounded-full bg-black/60 p-1.5 text-white hover:bg-black"
+              className="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-white hover:bg-[#A50C1E] transition-all cursor-pointer"
             >
               <X size={20} />
             </button>
-            <img src={selectedImage.url} alt="Di sản" className="max-h-[85vh] w-auto rounded object-contain mx-auto" />
+            <img src={selectedImage.url} alt="Di sản" className="max-h-[85vh] w-auto rounded-xl object-contain mx-auto" />
             {selectedImage.caption && (
-              <p className="mt-2 text-center text-xs italic text-slate-300">{selectedImage.caption}</p>
+              <p className="mt-3 text-center text-xs italic text-stone-300 px-4 pb-2 font-serif">{selectedImage.caption}</p>
             )}
           </div>
         </div>

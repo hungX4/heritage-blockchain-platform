@@ -1,6 +1,6 @@
-import { createPortal } from 'react-dom'; // 👈 Import createPortal
-import { AlertTriangle, CheckCircle2, XCircle, MinusCircle } from 'lucide-react';
-import type { SubmitVotePayload } from '../../schemas/vote.schema';
+import { createPortal } from 'react-dom';
+import { CheckCircle2, XCircle, MinusCircle } from 'lucide-react';
+import { SubmitVotePayload } from '../../types/verification.type';
 
 interface VoteConfirmModalProps {
   isOpen: boolean;
@@ -29,62 +29,71 @@ export function VoteConfirmModal({
   const statusConfig = {
     APPROVED: {
       label: 'Đồng ý / Chấp thuận',
-      badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-      icon: <CheckCircle2 className="text-emerald-600" size={24} />,
+      badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      icon: <CheckCircle2 className="text-emerald-700" size={24} />,
     },
     REJECTED: {
       label: 'Từ chối / Không chấp thuận',
-      badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
-      icon: <XCircle className="text-rose-600" size={24} />,
+      badgeClass: 'bg-rose-50 text-rose-800 border-rose-200',
+      icon: <XCircle className="text-rose-700" size={24} />,
     },
     ABSTAINED: {
       label: 'Phiếu trắng / Trắng phiếu',
-      badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-      icon: <MinusCircle className="text-amber-600" size={24} />,
+      badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+      icon: <MinusCircle className="text-amber-700" size={24} />,
     },
   }[status];
 
-  // 🟢 DÙNG CREATEPORTAL ĐỂ ĐẨY NÓ RA DOCUMENT.BODY
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl border border-stone-200 space-y-5">
-        <div className="flex items-start gap-4">
-          <div className="p-2 rounded-full bg-stone-100">{statusConfig.icon}</div>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-stone-200 space-y-5 text-slate-800 font-sans">
+        <div className="flex items-start gap-3.5">
+          <div className="p-2.5 rounded-xl bg-stone-100">{statusConfig.icon}</div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Xác nhận biểu quyết</h3>
-            <p className="text-sm text-slate-500 mt-1">
-              Quyết định của bạn sẽ được ghi nhận vào biên bản thẩm định và không thể thay đổi sau khi gửi.
+            <h3
+              className="text-lg font-bold text-slate-900"
+              style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+            >
+              Xác Nhận Biểu Quyết
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              Quyết định chuyên môn của bạn sẽ được niêm phong vào bản ghi thẩm định.
             </p>
           </div>
         </div>
 
-        <div className="space-y-3 rounded-lg bg-slate-50 p-4 border border-stone-200 text-sm">
+        <div className="space-y-3 rounded-xl bg-stone-50 p-4 border border-stone-200 text-xs">
           <div>
-            <span className="text-slate-500 block text-xs font-semibold uppercase">Hồ sơ di sản:</span>
-            <span className="font-semibold text-slate-900">{heritageName || 'Không xác định'}</span>
+            <span className="text-slate-500 block text-[10px] font-bold uppercase">Hồ sơ di sản:</span>
+            <span
+              className="font-bold text-slate-900 text-sm"
+              style={{ fontFamily: "'Merriweather', Georgia, serif" }}
+            >
+              {heritageName || 'Không xác định'}
+            </span>
           </div>
 
           <div>
-            <span className="text-slate-500 block text-xs font-semibold uppercase">Quyết định biểu quyết:</span>
-            <span className={`inline-block mt-1 px-2.5 py-1 rounded-md text-xs font-semibold border ${statusConfig.badgeClass}`}>
+            <span className="text-slate-500 block text-[10px] font-bold uppercase">Quyết định biểu quyết:</span>
+            <span className={`inline-block mt-1 px-2.5 py-1 rounded-md text-xs font-bold border ${statusConfig.badgeClass}`}>
               {statusConfig.label}
             </span>
           </div>
 
           <div>
-            <span className="text-slate-500 block text-xs font-semibold uppercase">Ý kiến chuyên môn:</span>
-            <p className="mt-1 text-slate-700 italic whitespace-pre-line bg-white p-2.5 rounded border border-stone-200">
+            <span className="text-slate-500 block text-[10px] font-bold uppercase">Ý kiến chuyên môn:</span>
+            <p className="mt-1 text-slate-700 italic whitespace-pre-line bg-white p-3 rounded-lg border border-stone-200">
               "{notes}"
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex items-center justify-end gap-3 pt-1">
           <button
             type="button"
             disabled={loading}
             onClick={onClose}
-            className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50"
+            className="rounded-lg border border-stone-300 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-stone-100 transition-colors disabled:opacity-50 cursor-pointer"
           >
             Hủy bỏ
           </button>
@@ -92,13 +101,13 @@ export function VoteConfirmModal({
             type="button"
             disabled={loading}
             onClick={onConfirm}
-            className="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 transition-colors disabled:opacity-50"
+            className="inline-flex items-center justify-center rounded-lg bg-[#A50C1E] px-4 py-2 text-xs font-bold text-white hover:bg-red-800 transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
           >
             {loading ? 'Đang gửi...' : 'Xác nhận & Gửi'}
           </button>
         </div>
       </div>
     </div>,
-    document.body // 👈 Đẩy thẳng ra ngoài root body
+    document.body
   );
 }

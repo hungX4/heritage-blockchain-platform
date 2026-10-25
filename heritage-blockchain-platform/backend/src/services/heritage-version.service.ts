@@ -8,8 +8,12 @@ import { sha256 } from "../utils/hash.until.js";
 import { BlockchainService } from "./blockchain.service.js";
 
 export interface GetVersionFilter {
-  search?: string,
-  location?: string,
+  search?: string;
+  location?: string;
+  fieldId?: string;
+  fieldCode?: string;
+  fromDate?: string;
+  toDate?: string;
   page?: number;
   limit?: number;
 }
@@ -208,7 +212,7 @@ export class HeritageVersionService {
       .addSelect('MAX(sub.version)', 'max_version')
       .groupBy('sub.heritageId');
 
-    // 2. Query chính INNER JOIN Subquery + Relation Heritage & Media
+    // 2. Query chính INNER JOIN Subquery + Relation Heritage & Field
     const query = this.versionRepo
       .createQueryBuilder('version')
       .innerJoin(
@@ -221,7 +225,7 @@ export class HeritageVersionService {
       .leftJoinAndSelect('heritage.field', 'field')
       .leftJoinAndSelect('version.media', 'media');
 
-    // 3. Điều kiện lọc Search (Tên hoặc Mã di sản) trực tiếp bằng SQL
+    // 3. Điều kiện lọc Search (Tên hoặc Mã di sản)
     if (filters.search) {
       const keyword = `%${filters.search.trim().toLowerCase()}%`;
       query.andWhere(
@@ -230,26 +234,57 @@ export class HeritageVersionService {
       );
     }
 
-    // 4. Điều kiện lọc Location (Tỉnh / Huyện / Xã) trực tiếp bằng SQL
+    // 4. Điều kiện lọc Location (Tỉnh / Huyện / Xã) - Đã sửa AS TEXT -> AS CHAR cho MySQL
     if (filters.location) {
       const locKeyword = `%${filters.location.trim().toLowerCase()}%`;
-      // Tìm kiếm text trên cột location (dù lưu dạng JSONB hay TEXT)
       query.andWhere(
-        'LOWER(CAST(heritage.location AS TEXT)) LIKE :location',
+        'LOWER(CAST(heritage.location AS CHAR)) LIKE :location',
         { location: locKeyword }
       );
     }
 
-    // 5. Thêm Sắp xếp, Skip, Take (Limit/Offset) ở cấp độ Database
+    // 5. Lọc theo ID Loại hình Di sản (Field ID)
+    if (filters.fieldId) {
+      query.andWhere('heritage.fieldId = :fieldId', { fieldId: filters.fieldId });
+    }
+
+    // 6. Lọc theo Mã loại hình Di sản (Field Code) - Đã sửa AS TEXT -> AS CHAR cho MySQL
+    if (filters.fieldCode) {
+      const cleanCode = filters.fieldCode.trim().toLowerCase();
+      query.andWhere(
+        '(TRIM(LOWER(field.code)) = :fieldCode OR LOWER(CAST(version.canonicalData AS CHAR)) LIKE :fieldCodeMatch)',
+        {
+          fieldCode: cleanCode,
+          fieldCodeMatch: `%"code":"${cleanCode}"%`
+        }
+      );
+    }
+
+    // 7. 🟢 Lọc theo khoảng Ngày ghi danh (recognizedAt) hoặc Ngày tạo phiên bản (createdAt)
+    if (filters.fromDate) {
+      query.andWhere(
+        '(heritage.recognizedAt >= :fromDate OR version.createdAt >= :fromDate)',
+        { fromDate: new Date(filters.fromDate) }
+      );
+    }
+
+    if (filters.toDate) {
+      query.andWhere(
+        '(heritage.recognizedAt <= :toDate OR version.createdAt <= :toDate)',
+        { toDate: new Date(filters.toDate) }
+      );
+    }
+
+    // 8. Thêm Sắp xếp, Skip, Take (Limit/Offset)
     query
       .orderBy('version.createdAt', 'DESC')
       .skip(skip)
       .take(limit);
 
-    // 6. Thực thi Query: Lấy danh sách bản ghi trang hiện tại & Tổng số bản ghi thỏa điều kiện
+    // 9. Thực thi Query
     const [versions, total] = await query.getManyAndCount();
 
-    // 7. Parse và chuẩn hóa dữ liệu Media cho 12 bản ghi của trang hiện tại
+    // 10. Parse và chuẩn hóa dữ liệu Media
     const items = versions.map((v) => {
       if (v.media && v.media.length > 0) {
         v.media.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));

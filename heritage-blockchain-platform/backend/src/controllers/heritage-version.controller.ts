@@ -29,12 +29,27 @@ export class HeritageVersionController {
   // api/version/
   static async getVersions(req: Request, res: Response) {
     try {
+      // 🟢 Bổ sung các Query Parameters cho Tìm kiếm & Lọc nâng cao
       const search = req.query.search ? String(req.query.search) : undefined;
       const location = req.query.location ? String(req.query.location) : undefined;
+      const fieldId = req.query.fieldId ? String(req.query.fieldId) : undefined;
+      const fieldCode = req.query.fieldCode ? String(req.query.fieldCode) : undefined;
+      const fromDate = req.query.fromDate ? String(req.query.fromDate) : undefined;
+      const toDate = req.query.toDate ? String(req.query.toDate) : undefined;
+
       const page = req.query.page ? parseInt(String(req.query.page), 10) : 1;
       const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 12;
 
-      const versions = await HeritageVersionService.getLatestVersion({ search, location, page, limit });
+      const versions = await HeritageVersionService.getLatestVersion({
+        search,
+        location,
+        fieldId,
+        fieldCode,
+        fromDate,
+        toDate,
+        page,
+        limit
+      });
 
       return res.status(200).json(
         successHandler(200, 'Lấy danh sách phiên bản di sản thành công', versions)

@@ -7,7 +7,7 @@ import { UserRole } from '../types/enums/rbac.js';
 const router = Router();
 
 // Xem danh sách & Tìm kiếm (Tất cả User đã đăng nhập)
-router.get('/', AuthMiddleware.authenticate, HeritageFieldController.getAll);
+router.get('/', HeritageFieldController.getAll);
 
 // Thao tác CRUD Quản lý Lĩnh vực (Chỉ SYSTEM_ADMIN)
 router.post('/', AuthMiddleware.authenticate, requireRole([UserRole.SYSTEM_ADMIN]), HeritageFieldController.create);

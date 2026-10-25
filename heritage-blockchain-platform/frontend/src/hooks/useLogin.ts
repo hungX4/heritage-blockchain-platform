@@ -20,7 +20,7 @@ export function useLogin() {
       setAuth(data.userData, data.accessToken);
 
 
-      navigate('/dashboard');
+      navigate('/');
     } catch (err: any) {
       // Bắt lỗi từ backend (ví dụ: INVALID_CREDENTIALS)
       setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.');

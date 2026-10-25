@@ -27,6 +27,9 @@ export const AppDataSource = new DataSource({
   synchronize: true,
   logging: process.env.DB_LOGGING === 'true',
   migrations: ['src/migrations/*.ts'],
+  ssl: {
+    rejectUnauthorized: true
+  }
 });
 
 export async function initializeDatabase() {

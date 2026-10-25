@@ -6,7 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc && cp -r src/blockchain/abi dist/blockchain/abi",
+    "build": "tsc && node scripts/copy-abi.mjs",
     "start": "node dist/server.js",
     "lint": "eslint .",
     "test:blockchain": "tsx test/blockchain.service.test.ts",

@@ -19,7 +19,7 @@ export function useRegister() {
       setAuth(data.userData, data.accessToken);
 
       // Đăng ký xong backend đã trả token, nên có thể cho vào luôn dashboard
-      navigate('/dashboard');
+      navigate('/');
     } catch (err: any) {
       // Bắt lỗi từ backend (ví dụ: EMAIL_IS_ALREADY_IN_USE)
       setError(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');

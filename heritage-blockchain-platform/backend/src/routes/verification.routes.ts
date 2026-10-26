@@ -26,7 +26,7 @@ verificationRoute.get(
 
 // 3. Chuyên gia bỏ phiếu (APPROVED hoặc REJECTED)
 verificationRoute.post(
-  '/:id/vote',
+  '/:verificationId/vote',
   validateDto(SubmitVoteDto),
   requireRole([UserRole.INDEPENDENT_EXPERT, UserRole.ORG_EXPERT]),
   VerificationController.submitVote
